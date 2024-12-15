@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\Mailer;
 use App\Services\SmtpMailer;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Route::pattern('gb_id', '[0-9a-z]+');
     }
 }
