@@ -10,13 +10,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        health: '/up',
-        then: function() {
-            Route::middleware('api')
-                ->prefix('webhooks')
-                ->name('webhooks')
-                ->group(base_path('routes/webhooks.php'));
-        }
+        health: '/up'
     )
     ->withMiddleware(function (Middleware $middleware) {
         //
@@ -52,16 +46,16 @@ return Application::configure(basePath: dirname(__DIR__))
 //         })->create();
 
 // Konfigurasi route ketika ingin kontrol penuh
-return Application::configure(basePath:dirname(__DIR__))
-            ->withRouting(
-    commands: __DIR__.'/../routes/console.php',
-    using: function () {
-        Route::middleware('api')
-            ->prefix('api/admin')
-            ->group(base_path('routes/api.php'));
+// return Application::configure(basePath:dirname(__DIR__))
+//             ->withRouting(
+//     commands: __DIR__.'/../routes/console.php',
+//     using: function () {
+//         Route::middleware('api')
+//             ->prefix('api/admin')
+//             ->group(base_path('routes/api.php'));
 
-        Route::middleware('web')
-            ->group(base_path('routes/web.php'));
-    },
-)
-            ->create();
+//         Route::middleware('web')
+//             ->group(base_path('routes/web.php'));
+//     },
+// )
+//             ->create();

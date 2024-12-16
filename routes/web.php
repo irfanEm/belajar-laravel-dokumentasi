@@ -3,6 +3,7 @@
 use App\Http\Controllers\SapaController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 Route::get('/', function () {
     return view('welcome');
@@ -61,6 +62,53 @@ Route::get('/url-named-route', function(){
                 'test-named-route' => $url1,
                 'sapa-controller' => $url2,
             ],
+        ],
+    ]);
+})->name('make_url');
+Route::get('/redirect-named-route2', function() {
+    return to_route('make_url');
+})->name('redirect2');
+Route::get('/redirect-named-route', function() {
+    return redirect()->route('redirect2');
+});
+
+
+// Named Route dengan parameter
+Route::get('/nrp/{param}', function($param){
+    return $param;
+})->whereAlpha('param')->name('named_route_param');
+
+Route::get('/named-route-param', function(){
+    $url = route('named_route_param',['param' => 'qwerty99']);
+    return response()->json([
+        'data' => [
+            'url' => $url,
+        ],
+    ]);
+});
+
+Route::get('/named-param-query', function(){
+    $url = route('named_route_param',['param' => 'balqis farah', 'query' => 'anabila']);
+    return response()->json([
+        'data' => [
+            'url' => $url,
+        ],
+    ]);
+});
+
+Route::get('/default-url/{default}', function($defult) {
+    return response()->json([
+        'data' => [
+            'default' => $defult,
+        ],
+    ]);
+})->name('default_param');
+
+Route::get('/def-param', function() {
+    $url = route('default_param');
+    return response()->json([
+        'data' => [
+            'url' => $url,
         ],
     ]);
 });
