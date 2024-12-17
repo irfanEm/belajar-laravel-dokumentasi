@@ -111,4 +111,4 @@ Route::get('/def-param', function() {
             'url' => $url,
         ],
     ]);
-});
+})->name('def_param')->middleware('cek.profile');
