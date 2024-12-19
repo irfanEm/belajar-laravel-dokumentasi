@@ -112,3 +112,49 @@ Route::get('/def-param', function() {
         ],
     ]);
 })->name('def_param')->middleware('cek.profile');
+
+//Route Group
+// Group by name
+Route::name('group_by_name')->group(function() {
+    Route::get('/name_one', function() {
+        return response()->json([
+            'message' => 'hi, im route name_one form route group by name.',
+        ]);
+    })->name('one');
+
+        Route::get('/name_two', function() {
+            return response()->json([
+                'message' => 'hi, im route name_two form route group by name.',
+            ]);
+        })->name('two');
+});
+
+// Group by prefix
+Route::prefix('group_prefix')->group(function() {
+    Route::get('/alpha', function() {
+        return response()->json([
+            'message' => 'hi, im route alpha with prefix group_prefix, and group by prefix route.'
+        ]);
+    })->name('group_prefix_alpha');
+
+    Route::get('/beta', function() {
+        return response()->json([
+            'message' => 'hi, im route beta with prefix group_prefix, and group by prefix route.'
+        ]);
+    })->name('group_prefix_beta');
+});
+
+//Group by middleware
+Route::middleware('route.group.middleware')->group(function() {
+    Route::get('/group_mid_one', function() {
+        return response()->json([
+            'message' => 'hi, im route group_mid_one, by route group middleware.'
+        ]);
+    })->name('group_mid_one');
+
+    Route::get('/group_mid_two', function() {
+        return response()->json([
+            'message' => 'hi, im route group_mid_two, by route group middleware.'
+        ]);
+    })->name('route_group_two');
+});
