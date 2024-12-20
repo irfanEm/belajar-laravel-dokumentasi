@@ -17,6 +17,8 @@ class CheckProfileRoute
     {
         if($request->route()->named('def_param')) {
             logger('User mengakses route default param.');
+        }else{
+            logger('user mengakses middleware ini.');
         }
         return $next($request);
     }

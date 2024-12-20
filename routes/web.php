@@ -158,3 +158,18 @@ Route::middleware('route.group.middleware')->group(function() {
         ]);
     })->name('route_group_two');
 });
+
+// group by middleware more than one
+Route::middleware(['cek.profile', 'route.group.middleware'])->group(function() {
+    Route::get('/gbm2to', function() {
+        return response()->json([
+            'message' => 'Route group by middleware more than one.',
+        ]);
+    });
+});
+
+// group by controller
+Route::controller(SapaController::class)->group(function(){
+    Route::get('/method_sapa1', 'route_group_controller1')->name('rgc1');
+    Route::get('/method_sapa2', 'route_group_controller2')->name('rgc2');
+});
