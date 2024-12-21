@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\SapaController;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -172,4 +174,41 @@ Route::middleware(['cek.profile', 'route.group.middleware'])->group(function() {
 Route::controller(SapaController::class)->group(function(){
     Route::get('/method_sapa1', 'route_group_controller1')->name('rgc1');
     Route::get('/method_sapa2', 'route_group_controller2')->name('rgc2');
+});
+
+// group by prefix
+Route::prefix('prefix')->group(function() {
+    Route::get('/test_pref1', function(){
+        return response()->json([
+            'message' => route('pref2'),
+        ]);
+    })->name('pref1');
+
+    Route::get('/test_pref2', function(){
+        return response()->json([
+            'message' => route('pref1'),
+        ]);
+    })->name('pref2');
+});
+
+// group by name
+Route::name('test_name.')->group(function() {
+    Route::get('/group_name', function(){
+        return response()->json([
+            'pesan' => 'ini adalah route dengan nama \'test_name.1\'.',
+        ]);
+    })->name('1');
+
+    Route::get('/group_name2', function(){
+        return response()->json([
+            'pesan' => 'ini adalah route dengan nama \'test_name.2\'.',
+        ]);
+    })->name('2');
+});
+
+// Route Model Binding
+Route::get('/user/{user}', function(User $user) {
+    return response()->json([
+        'data' => $user,
+    ]);
 });
