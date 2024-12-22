@@ -206,9 +206,11 @@ Route::name('test_name.')->group(function() {
     })->name('2');
 });
 
-// Route Model Binding
+// Route Model Binding - Implict binding
 Route::get('/user/{user}', function(User $user) {
     return response()->json([
         'data' => $user,
     ]);
 });
+
+Route::get('/imbin/{user}', [SapaController::class, 'imbinMethod']);

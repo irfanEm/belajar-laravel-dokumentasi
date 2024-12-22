@@ -37,4 +37,29 @@ class RouteModelBindingTest extends TestCase
         $response->assertSee($user->email);
 
     }
+
+    public function test_route_model_binding_user_notfound()
+    {
+        $response = $this->get('/user/998');
+
+        //cek apakah response sukses
+        $response->assertStatus(404);
+    }
+
+    public function test_implict_binding_controller_found()
+    {
+        $user = User::factory()->create([
+            'name' => 'Irfan M',
+            'email' => 'iem97@test.com'
+        ]);
+
+        $response= $this->get('/imbin/' . $user->id);
+
+        // cek status response sukses
+        $response->assertStatus(200);
+
+        // cek apakah data valid
+        $response->assertSee('Irfan M');
+        $response->assertSee('iem97@test.com');
+    }
 }
