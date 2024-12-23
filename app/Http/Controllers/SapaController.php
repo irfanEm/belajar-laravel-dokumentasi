@@ -37,4 +37,19 @@ class SapaController extends Controller
             ]
         ]);
     }
+
+    public function softDelMeth(User $user)
+    {
+        if($user->trashed()) {
+            return response()->json([
+                'message' => 'User ini telah dihapus.',
+                'email' => $user->email,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'User masih aktif.',
+            'email' => $user->email,
+        ]);
+    }
 }

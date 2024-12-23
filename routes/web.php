@@ -214,3 +214,6 @@ Route::get('/user/{user}', function(User $user) {
 });
 
 Route::get('/imbin/{user}', [SapaController::class, 'imbinMethod']);
+
+// Soft Deletes dan Implict Binding
+Route::get('/softdel/{user}', [SapaController::class, 'softDelMeth'])->withTrashed()->name('softDelImBin');
