@@ -217,3 +217,24 @@ Route::get('/imbin/{user}', [SapaController::class, 'imbinMethod']);
 
 // Soft Deletes dan Implict Binding
 Route::get('/softdel/{user}', [SapaController::class, 'softDelMeth'])->withTrashed()->name('softDelImBin');
+
+// Customizing the key Implict Binding
+Route::get("/custom_key_route/{user:email}", function(User $user){
+    if($user->trashed())
+    {
+        return response()->json([
+            'message' => 'User telah dihapus.',
+            'nama' => $user->name,
+            'email' => $user->email,
+        ]);
+    }
+
+    return response()->json([
+        'message' => 'User active.',
+        'nama' => $user->name,
+        'email' => $user->email,
+    ]);
+
+})->name("custom_key_imbin")->withTrashed();
+
+Route::get("/custom_key_controller/{user:email}", [SapaController::class, "custome_key_imbin"])->name("custome_key_controller")->withTrashed();

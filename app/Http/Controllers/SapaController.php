@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SapaController extends Controller
@@ -49,6 +50,24 @@ class SapaController extends Controller
 
         return response()->json([
             'message' => 'User masih aktif.',
+            'email' => $user->email,
+        ]);
+    }
+
+    public function custome_key_imbin(User $user): JsonResponse
+    {
+        if($user->trashed())
+        {
+            return response()->json([
+                'message' => 'User telah dihapus.',
+                'nama' => $user->name,
+                'email' => $user->email,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'User active.',
+            'nama' => $user->name,
             'email' => $user->email,
         ]);
     }
