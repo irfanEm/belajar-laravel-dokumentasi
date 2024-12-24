@@ -127,4 +127,39 @@ class UserServiceTest extends TestCase
             'email' => $user->email,
         ]);
     }
+
+    public function testCustomKeyImplictBindinggetRouteKeyName()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->get("/custom_key_controller/{$user->email}");
+
+        // pastikan status response 200
+        $response->assertStatus(200);
+
+        // pastikan mendapatkan response json sesuai format yang ditentukan
+        $response->assertJson([
+            'message' => 'User active.',
+            'nama' => $user->name,
+            'email' => $user->email,
+        ]);
+    }
+
+    public function testCustomKeyImplictBindinggetRouteKeyNameSoftDeletes()
+    {
+        $user = User::factory()->create();
+        $user->delete();
+
+        $response = $this->get("/custom_key_controller/{$user->email}");
+
+        // pastikan status response 200
+        $response->assertStatus(200);
+
+        // pastikan mendapatkan response json sesuai format yang ditentukan
+        $response->assertJson([
+            'message' => 'User telah dihapus.',
+            'nama' => $user->name,
+            'email' => $user->email,
+        ]);
+    }
 }

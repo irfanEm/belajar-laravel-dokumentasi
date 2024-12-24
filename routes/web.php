@@ -238,3 +238,6 @@ Route::get("/custom_key_route/{user:email}", function(User $user){
 })->name("custom_key_imbin")->withTrashed();
 
 Route::get("/custom_key_controller/{user:email}", [SapaController::class, "custome_key_imbin"])->name("custome_key_controller")->withTrashed();
+
+// custome key with getRouteKeyName method
+Route::get("/getroutekeyname/{user}", [SapaController::class, "custome_key_imbin"])->name("customeWithGetRouteKeyNameMethod");
