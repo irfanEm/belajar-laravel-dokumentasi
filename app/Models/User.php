@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return 'email';
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 }

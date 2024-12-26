@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
@@ -69,6 +70,23 @@ class SapaController extends Controller
             'message' => 'User active.',
             'nama' => $user->name,
             'email' => $user->email,
+        ]);
+    }
+
+    public function customKeyAndScoping(User $user, Post $post)
+    {
+        return response()->json([
+            'data' => [
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email
+                ],
+                'post' => [
+                    'title' => $post->title,
+                    'slug' => $post->slug,
+                    'content' => $post->content,
+                ]
+            ]
         ]);
     }
 }

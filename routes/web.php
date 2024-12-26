@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SapaController;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
@@ -241,3 +242,21 @@ Route::get("/custom_key_controller/{user:email}", [SapaController::class, "custo
 
 // custome key with getRouteKeyName method
 Route::get("/getroutekeyname/{user}", [SapaController::class, "custome_key_imbin"])->name("customeWithGetRouteKeyNameMethod");
+
+// Route custome key & scoping
+Route::get("/custom_key_and_scoping/controller/user/{user}/post/{post:slug}", [SapaController::class, 'customKeyAndScoping'])->name('customKeyAndScopingController');
+Route::get("/custom_key_and_scoping/route/user/{user}/post/{post:slug}", function(User $user, Post $post) {
+    return response()->json([
+        'data' => [
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email
+            ],
+            'post' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ]
+        ]
+    ]);
+})->name('customKeyAndScopingRoute');
