@@ -1,11 +1,16 @@
 <?php
 
+use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\SapaController;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
+
+
 
 
 Route::get('/', function () {
@@ -260,3 +265,12 @@ Route::get("/custom_key_and_scoping/route/user/{user}/post/{post:slug}", functio
         ]
     ]);
 })->name('customKeyAndScopingRoute');
+
+// Route for custome model binding behavior
+Route::name('locations.')->group(function() {
+    Route::get("/custom_model_binding_behavior/locations",[LocationsController::class, 'index'])->name('index');
+    Route::get("/custome_model_binding_behavior/location/show/{location:slug}", [LocationsController::class, 'show'])->name('show')
+        ->missing(function (Request $request) {
+            return Redirect::route('locations.index');
+        });
+});
