@@ -284,3 +284,15 @@ Route::get("/implicit_enum_binding/{category}", function(Category $category){
         ]
     ]);
 })->name("route-implicit-enum-binding");
+
+// Route Explicit Binding
+Route::get("/explicit_binding/{user}", function(User $user) {
+    return response()->json([
+        'data' => [
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]
+        ],
+    ]);
+})->name('explicit_binding_route');
