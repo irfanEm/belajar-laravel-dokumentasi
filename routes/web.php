@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Category;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\SapaController;
 use App\Models\Post;
@@ -274,3 +275,12 @@ Route::name('locations.')->group(function() {
             return Redirect::route('locations.index');
         });
 });
+
+// Route implicit enum binding
+Route::get("/implicit_enum_binding/{category}", function(Category $category){
+    return response()->json([
+        'data' => [
+            'category' => $category->value,
+        ]
+    ]);
+})->name("route-implicit-enum-binding");
