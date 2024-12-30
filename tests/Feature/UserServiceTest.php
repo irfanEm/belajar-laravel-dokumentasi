@@ -27,7 +27,7 @@ class UserServiceTest extends TestCase
         $user = User::factory()->create();
 
         // mengambil response dari url
-        $response = $this->get("/softdel/{$user->id}");
+        $response = $this->get("/softdel/{$user->email}");
 
         // pastikan status response 200
         $response->assertStatus(200);
@@ -46,7 +46,7 @@ class UserServiceTest extends TestCase
         $user->delete();
 
         // mengambil response dari url
-        $response = $this->get("/softdel/{$user->id}");
+        $response = $this->get("/softdel/{$user->email}");
 
         // pastikan status response 200
         $response->assertStatus(200);

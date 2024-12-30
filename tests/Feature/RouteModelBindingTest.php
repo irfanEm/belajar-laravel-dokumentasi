@@ -27,7 +27,7 @@ class RouteModelBindingTest extends TestCase
             'email' => 'jems@cat.com'
         ]);
 
-        $response = $this->get('/user/'.$user->id);
+        $response = $this->get('/user/'.$user->email);
 
         //cek apakah response sukses
         $response->assertStatus(200);
@@ -53,7 +53,7 @@ class RouteModelBindingTest extends TestCase
             'email' => 'iem97@test.com'
         ]);
 
-        $response= $this->get('/imbin/' . $user->id);
+        $response= $this->get('/imbin/' . $user->email);
 
         // cek status response sukses
         $response->assertStatus(200);
