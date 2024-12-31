@@ -3,6 +3,7 @@
 use App\Enums\Category;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\SapaController;
+use App\Models\Item;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -296,3 +297,16 @@ Route::get("/explicit_binding/{user}", function(User $user) {
         ],
     ]);
 })->name('explicit_binding_route');
+
+// Route for customizing resolve logic
+Route::get("/custom_resolve_logic/{item}", function(Item $item) {
+return response()->json([
+    'data' => [
+        'item' => [
+            'name' => $item->name,
+            'description' => $item->description,
+            'quantity' => $item->quantity,
+        ]
+    ],
+]);
+})->name("custom_resolve_logic_with_bind_method");

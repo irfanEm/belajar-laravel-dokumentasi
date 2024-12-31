@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\Mailer;
+use App\Models\Item;
 use App\Models\User;
 use App\Services\SmtpMailer;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Explicit binding model
         Route::model('user', User::class);
+
+        // Customizing resolution logic
+        Route::bind('item', function(string $value) {
+            // cari item berdasarkan nama
+            return Item::where('name', $value)->firstOrFail();
+        });
 
     }
 }
