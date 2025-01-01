@@ -70,7 +70,7 @@ class CustomResolvingLogicTest extends TestCase
         $response->assertSee('404');
     }
 
-    public function testCRMWithResolveChildRouteBindingMethod()
+    public function testCRMWithResolveChildRouteBindingMethodStatus200()
     {
         $item = Item::factory()->create();
         $itemDetail = ItemDetail::factory()->create();
@@ -90,6 +90,19 @@ class CustomResolvingLogicTest extends TestCase
                 ]
             ]
         ]);
+    }
+
+    public function testCRMWithResolveChildRouteBindingMethodStatus404()
+    {
+        $item = Item::factory()->create();
+        $itemDetail = ItemDetail::factory()->create();
+
+        $response = $this->get("/custome_resolve_logic/item/{$item->id}/detail/not-found");
+
+        // pastikan response mengembalikan status 200
+        $response->assertStatus(404);
+        // pastikan response mengembalikan json yang sesuai
+        $response->assertSee('404');
     }
 }
 
