@@ -4,6 +4,7 @@ use App\Enums\Category;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\SapaController;
 use App\Models\Item;
+use App\Models\ItemDetail;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -310,3 +311,16 @@ return response()->json([
     ],
 ]);
 })->name("custom_resolve_logic_with_bind_method");
+
+Route::get("/custome_resolve_logic/item/{item}/detail/{item_detail}", function(Item $item, ItemDetail $itemDetail) {
+    return response()->json([
+        'data' => [
+            'item' => [
+                'name' => $item->name,
+                'description' => $item->description,
+                'quantity' => $item->quantity,
+                'detail' => $itemDetail->id,
+            ]
+        ]
+    ]);
+})->name("custom_resolve_logic_with_resolve_child_route_binding");

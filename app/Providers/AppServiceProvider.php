@@ -32,10 +32,10 @@ class AppServiceProvider extends ServiceProvider
         Route::model('user', User::class);
 
         // Customizing resolution logic
-        Route::bind('item', function(string $value) {
+        //Route::bind('item', function(string $value) {
             // cari item berdasarkan nama
-            return Item::where('name', $value)->firstOrFail();
-        });
+            //return Item::where('name', $value)->firstOrFail();
+        //});
 
     }
 }
