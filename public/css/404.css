@@ -1,0 +1,64 @@
+/* Global styling for dark mode */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #121212;
+    color: #fff;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-text {
+    display: flex;
+    font-size: 10rem;
+    font-weight: bold;
+    perspective: 500px;
+}
+
+.digit {
+    color: #fff;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transform: rotateX(0) rotateY(0) rotateZ(0);
+    animation: rotate-animation 3s infinite ease-in-out;
+}
+
+/* Animation for the digits */
+@keyframes rotate-animation {
+    0% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    }
+    25% {
+        transform: rotateX(20deg) rotateY(30deg) rotateZ(0deg);
+    }
+    50% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(20deg);
+    }
+    75% {
+        transform: rotateX(-20deg) rotateY(-30deg) rotateZ(-10deg);
+    }
+    100% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    }
+}
+
+/* Specific delays for each digit to create the 3D effect */
+#digit-4-left {
+    animation-delay: 0s;
+}
+
+#digit-0 {
+    animation-delay: 0.2s;
+}
+
+#digit-4-right {
+    animation-delay: 0.4s;
+}

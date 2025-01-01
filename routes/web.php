@@ -324,3 +324,8 @@ Route::get("/custome_resolve_logic/item/{item}/detail/{item_detail}", function(I
         ]
     ]);
 })->name("custom_resolve_logic_with_resolve_child_route_binding");
+
+// Fallback Route
+Route::fallback(function(){
+    return response()->view('errors.404', [], 404);
+})->name('fallback');
