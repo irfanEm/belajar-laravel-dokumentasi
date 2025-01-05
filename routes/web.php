@@ -3,6 +3,7 @@
 use App\Enums\Category;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\SapaController;
+use App\Http\Controllers\UploadController;
 use App\Models\Item;
 use App\Models\ItemDetail;
 use App\Models\Post;
@@ -329,3 +330,8 @@ Route::get("/custome_resolve_logic/item/{item}/detail/{item_detail}", function(I
 Route::fallback(function(){
     return response()->view('errors.404', [], 404);
 })->name('fallback');
+
+// Route for RouteLimiter
+Route::middleware('throttle:upload')->group(function() {
+    Route::post('/route-limiter/upload', [UploadController::class, 'upload'])->name('upload_rate_limiter');
+})->name('RouteLImiterTest');
