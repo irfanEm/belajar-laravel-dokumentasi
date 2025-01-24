@@ -33,7 +33,7 @@ class RateLimiterTest extends TestCase
         }
     }
 
-    public function testExceedingRateLimitReturn429()
+    public function testExcedingRateLimitReturn429()
     {
         for($i = 0; $i<5; $i++){
             $response = $this->postJson('/route-limiter/upload', [
