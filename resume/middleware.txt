@@ -1,0 +1,249 @@
+Middleware resume based on documentation.
+
+1. cara membuat middleware :
+    gunakan perintah :
+
+    php artisan make:middleware NamaMiddleware
+
+2. Struktur utama method handle di middleware :
+
+    public function method handle(Request $request, Closure $next) {
+        // logic untuk memeriksa
+        return $next($request);
+    }
+
+3, Middleware dapat dijalankan sebelum / sesudah request masuk ke aplikasi.
+
+    contoh penggunaan sebelum :
+
+    public function handle(Request $request, Closure $next) {
+        // logic pemeriksaan
+        return $next($request);
+    }
+
+    contoh penggunaan setelah :
+
+    public function handle() {
+        // logic pemeriksaan
+        $response = $next($request);
+        // logic action yang diinginkan
+        return $response;
+    }
+
+4. Cara mendaftarkan middleware global middleware
+    - buka file bootstrap/app.php, selanjutnya gunakan / tambahkan method 'withMiddleware()' (jika belum ada) dan menggunakan method 'append()' / 'prepend()'.
+    contoh :
+
+    ->withMiddleware(function (Middleware $middleware) {
+        // contoh menggunakan method append()
+        $middleware->append(NamaMiddleware::class);
+
+        // contoh menggunakan method prepend()
+        $middleware->prepend(NamaMiddleware::class);
+    });
+
+    - cara mengatur global middleware secara manual
+    bisa dengan menggunakan method 'use()' pada method 'withMiddleware()' di dalam file bootstrap/app.php. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        $middleware->use([
+            \Illuminate\Http\Middleware\MiddlewareSatu::class,
+            \Illuminate\Http\Middleware\MiddlewareDua::class,
+            \Illuminate\Http\Middleware\MiddlewareTiga::class,
+        ]);
+    })
+
+5. Cara menggunakan middleware di route
+
+    - menggunakan satu middleware :
+
+    Route::get('/contoh-url' function(){
+        // code
+    })->middleware(NamaMiddleware::class);
+
+    - menggunakan dua / lebih middleware :
+
+    Route::get('/contoh-url' function(){
+        // code
+    })->middleware([MiddlewareSatu::class, MiddlewareDua::class]);
+
+6. Cara Excluding / mengecualikan middleware
+    - untuk mengecualikan middleware bisa menggunakan method 'withoutMiddleware()'. contoh :
+
+    - pada route tertentu :
+
+    Route::get('/contoh-url' function(){
+        // code
+    })->withoutMiddleware([NamaMiddleware::class]);
+
+    - pada route grup :
+
+    Route::withoutMiddleware([NamaMiddleware::class])->grup(function(){
+        Route::get('/', function(){
+            // code
+        });
+
+        Route::get('/', function(){
+            // code
+        });
+    });
+
+7. Cara mengelompokan middleware dalam satu kata kunci agar lebih mudah dipanggil.
+    - untuk melakukanya kamu dapat menggunakan method  'appendToGroup()' atau 'prependToGroup()' pada method 'withMiddleware()' di dalam file bootstrap/app.php. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        // contoh menggunakan method appendToGroup()
+        $middleware->appentToGroup('nama-group', [
+            MiddlewareSatu::class,
+            MiddlewareDua::class
+        ]);
+
+        // contoh menggunakan method prependToGroup()
+        $middleware->prependToGroup('nama-group', [
+            MiddlewareSatu::class,
+            MiddlewareDua::class
+        ]);
+    })
+
+    - kemudian cara menggunakanya cukup dengan memanggil nama gorup pada method 'middleware()' yang di panggil di route. contoh :
+
+    - penggunaan pada route tertentu.
+    Route::get('/contoh-url', function(){
+        // code
+    })->middleware('nama-group');
+
+    - penggunaan pada route group :
+    Route::middleware('nama-group')->group(function() {
+        // Route-mu.
+    });
+
+8. Group Middleware Default Laravel.
+    - Berikut adalah grup middleware default :
+    - web :
+    Illuminate\Cookie\Middleware\EncryptCookies
+    Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse
+    Illuminate\Session\Middleware\StartSession
+    Illuminate\View\Middleware\ShareErrorsFromSession
+    Illuminate\Foundation\Http\Middleware\ValidateCsrfToken
+    Illuminate\Routing\Middleware\SubstituteBindings
+
+    -api :
+    Illuminate\Routing\Middleware\SubstituteBindings
+
+9. Cara menambahkan middleware ke Group middleware default laravel.
+    - untuk menambahkan suatu middleware ke group middleware default laravel, gunakan method 'web()' / 'api()' pada method 'withMiddleware()' di file bootstrap/app.php. dengan menambahkan named argument 'append: ' atau 'prepend: '. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        $middleware->web(append: [
+            NamaMiddleware::class,
+        ]);
+
+        // contoh menggunakan method api()
+        $middleware->api(prepend: [
+            NamaMiddleware::class,
+        ]);
+    });
+
+10. Cara mengganti middleware dari group middleware default laravel.
+    - Kamu juga dapat mengganti middleware di dalam group middleware default laravel dengan menggunakan method 'web()' / 'api()' dengan menambahkan named argument 'replace: '. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        $middleware->web(replace: [
+            StartSession::class => PenggantiSession::class,
+        ]);
+    });
+
+11. Cara menghapus middleware dari group middleware default laravel.
+    -> gunakan named argument 'remove: ' pada method 'web()' / 'api()' untuk menghapus middleware dari group middleware default laravel. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        $middleware->web(remove: [
+            StartSession::class
+        ]);
+    });
+
+12. Cara mengatur ulang group middleware default laravel.
+    - gunakan method 'group()' pada method withMiddleware di file bootstrap/app.php untuk mengatur ulang gorup middleware default laravel. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        // contoh mengatur ulang pada group web.
+        $middleware->group('web', [
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            // \Illuminate\Session\Middleware\AuthenticateSession::class,
+        ]);
+
+        // contoh mengatur ulang pada group api.
+        $middleware->group('api', [
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // 'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
+    });
+
+13. Cara memberikan nama alias untuk middleware.
+    - gunakan method 'alias()' pada method 'withMiddleware()' di file bootstrap/app.php. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        $middleware->alias([
+            'nama-alias' => ContohMiddleware::class,
+        ]);
+    });
+
+    - contoh cara penggunaan middleware di route :
+
+    Route::get('/', function(){
+        // code
+    })->middleware('nama-alias');
+
+14. Alias Default middleware bawaan laravel.
+
+    auth : Illuminate\Auth\Middleware\Authenticate
+    auth.basic : Illuminate\Auth\Middleware\AuthenticateWithBasicAuth
+    auth.session : Illuminate\Session\Middleware\AuthenticateSession
+    cache.headers : Illuminate\Http\Middleware\SetCacheHeaders
+    can : Illuminate\Auth\Middleware\Authorize
+    guest : Illuminate\Auth\Middleware\RedirectIfAuthenticated
+    password.confirm : Illuminate\Auth\Middleware\RequirePassword
+    precognitive : Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests
+    signed : Illuminate\Routing\Middleware\ValidateSignature
+    subscribed	\Spark\Http\Middleware\VerifyBillableIsSubscribed
+    throttle : Illuminate\Routing\Middleware\ThrottleRequests or Illuminate\Routing\Middleware\ThrottleRequestsWithRedis
+    verified : Illuminate\Auth\Middleware\EnsureEmailIsVerified
+
+15. Mengurutkan eksekusi middleware.
+    - Kamu dapat mengurutkan pengeksekusian middleware menggunakan method 'priority()' pada method 'withMiddleware()' di file bootstrap/app.php. contoh :
+
+    ->withMiddleware(function(Middleware $middleware) {
+        $middleware->priority([
+            \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            \Illuminate\Auth\Middleware\Authorize::class,
+        ]);
+    });
+
+16. Parameter middleware
+    - jika ingin menambahkan parameter tambahan pada middleware, tambahkan setelah argument $next. contoh :
+
+    public function handle(Request $request, Closure $next, String $role): Response
+    {
+        if(! $request->user()->hasRole($role)){
+            // Redirect
+        }
+        return $next($request);
+    }
+
+17. Terminable Middleware

@@ -1,0 +1,226 @@
+Laravel's Response resume based on documentation.
+
+1. Cara membuat Response
+    - Response paling sederhana adalah dengan mengembalikan string dari action route / controller. contoh :
+
+    Route::get('/home', function(){
+        return 'hello response';
+    });
+
+    - Atau juga bisa mengembalikan array yang secara otomatis akan diconvert menjadi data json. contoh :
+
+    Route::get('/home', function(){
+        return ['hello response', 'hello array'];
+    });
+
+    - daripada hanya mengembalikan sebuah teks / string sederhana, mengembalikan object response lebih disarankan, karena dengan ini kita bisa memanipulasi status code dan data header dari HTTP response. contoh :
+
+    Route::get('/home', function (){
+        return response('hello response', 200)
+            ->header('Content-Type', 'text/html');
+    });
+
+    - object response mewarisi class 'Symfony\Component\HttpFoundation\Response'.
+    - mengembalikan response berupa object eloquent ORM / collection juga bisa dilakukan. Laravel akan secara otomatis mengkonversi object eloquent / collection menjadi response json. contoh :
+
+    Route::get('/user/{user}', function(User $user){
+        return $user;
+    });
+
+2. Cara melampirkan header ke response.
+    - karena hampir semua method response bersifat chainable (dapat dirantai), kamu dapat melampirkan header ke response menggunakan method 'header()'. contoh :
+
+    Route::get('/response', function(string $content){
+        return response($content)
+            ->header('Content-Type', 'text/html')
+            ->header('X-HEADER-ONE', 'Nilai Header')
+            ->header('X-HEADER-TWO', 'Nilai Header');
+    });
+
+    - atau bisa juga menggunakan method 'withHeaders()' yang menerima parameter berupa array yang berisi header yang ingin dilampirkan. contoh :
+
+    return response($content)
+        ->withHeaders([
+            'Content-Type' => 'text/html',
+            'X-HEADER-ONE' => 'Nilai Header',
+            'X-HEADER-TWO' => 'Nilai Hedaer',
+        ]);
+    - laravel menyediakan middleware chace-control header yang dapat digunakan dalam group route. dengan menggunakan middleware ini kita bisa menentukan bagaimana browser / proxy menyimpan cache dari response yang diberikan. Directives(intruksi) yang dituliskan harus berformat 'snack-case' dan dipisahkan dengan titik koma(;), jika didalam directives ditambahkan 'etag' maka laravel mengatur content response ke hash dari MD5 dan diatur sebagai ETag identifier. contoh :
+
+    Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
+        Route::get('/privacy', function () {
+            // Misalnya: mengembalikan tampilan halaman Kebijakan Privasi
+            return view('privacy');
+        });
+
+        Route::get('/terms', function () {
+            // Misalnya: mengembalikan tampilan halaman Syarat & Ketentuan
+            return view('terms');
+        });
+    });
+
+    - Instruksi yang kamu berikan, seperti public, max_age=2628000, dan etag, masing-masing memiliki fungsi:
+
+    - public: Menandakan bahwa respons bisa di-cache oleh siapa saja, termasuk proxy dan browser.
+    - max_age=2628000: Menentukan waktu maksimal (dalam detik) konten dapat di-cache. Dalam contoh ini, konten bisa di-cache selama 2.628.000 detik.
+    - etag: Secara otomatis menghasilkan hash MD5 dari konten respons dan menetapkannya sebagai ETag. ETag digunakan untuk memvalidasi apakah konten sudah berubah atau belum.
+
+3. Cara melampirkan cookie di response.
+    - untuk melampirkan cookie ke object response, kita bisa menggunakan method 'cookie()', method ini harus menerima parameter nama, nilai, dan waktu dalam menit. contoh :
+
+    return response('hello response')
+        ->cookie('nama', 'nilai', $minutes);
+
+    - selain 3 parameter wajib, method ini juga bisa menerima beberapa parameter tambahan yang jarang digunakan, yang mana sama dengan method 'setcookie()' dari php native. contoh :
+
+    return response('hello response')
+        ->cookie('nama', 'nilai', $minutes, $path, $domain, $secure, $httpOnly);
+
+    - selain itu kita juga bisa men-generate cookie yang bisa kita lampirkan ke object response dilain waktu, dan cookie ini tidak akan dikembalikan ke user selama belum dilampirkan ke response. Yaitu dengan menggunakan global helper method 'cookie()'. contoh :
+
+    $cookie = cookie('nama', 'nilai', $minutes);
+
+    return response('hello response')
+        ->cookie($cookie);
+
+    - jika kita ingin memastikan untuk melampirkan cookie dengan response yang keluar, tapi kita belum punya object response-nya, kita bisa menggunakan facade Cookie dan memanggil static method 'queue', selanjutnya berikan nilai yang harus diberikan untuk membuat object cookie sebagai argument-nya. contoh :
+
+    Illuminate\Support\Facades\Cookie;
+
+    Cookie::queue('language', 'id', 60);
+
+    - ketika ingin menghapus cookie dari object response, gunakan method 'wihtoutCookie()'. contoh :
+
+    return response()->wihtoutCookie('nama');
+
+    - atau, jika kamu belum memiliki object response, gunakan method 'expire()' dari facade Cookie. contoh :
+
+    Cookie::expire('nama');
+
+4. Cara disable encrypt cookie.
+    - semua cookie yang yang dihasilkan oleh aplikasi laravel akan di enkripsi oleh middleware 'Illuminate\Cookie\Middleware\EncryptCookies' yang mengakibatkan cookie ini tidak bisa dimodifikasi dan dibaca oleh client. jika kita ingin mematikan / menonaktifkan middleware ini, kita bisa menggunakan method 'encryptCookies()' di file bootstrap/app.php dari aplikasi kita. contoh :
+
+    ->withMiddleware(function(Middleware $middleware){
+        $middleware->encryptCookies(expect: [
+            'cookie_name',
+        ]);
+    });
+
+5. Cara men-generate object redirect.
+    - redirect response adalah object dari class 'Illuminate\Http\RedirectResponse', dan berisi header yang tepat untuk me-redirect user ke URl lain. banyak cara untuk men-generate object redirect response, tapi yang paling simple adalah dengan menggunakan global helper method 'redirect()'. contoh :
+
+    Route::get('/dashboard', function(){
+        return redirect('/home/dashboard');
+    });
+
+    - terkadang kita mungkin ingin me-redirect user ke URl sebelumnya, seperti saat user men-submit form yang tidak valid, untuk melakukanya kita bisa menggunakan global helper function 'back()'. dan karena fitur ini memanfaatkan session, pastikan memanggil method 'back()' menggunakan middleware 'web'. contoh :
+
+    Route::post('/user/profile', function(){
+        // logic validasi
+
+        return back()->withInput();
+    });
+
+6. cara redirect ke route bernama.
+    - ketika method 'redirect()' tidak diberikan parameter apapun, dia akan mengembalikan object dari class 'Illuminate\Routing\Redirector'. yang mana kita bisa memanggil method apapun dari object 'Redirector'. sebagai contoh kita bisa men-generate object redirect response ke sebuah route bernama dengan method 'route()'. contoh :
+
+    return redirect()->route('home');
+
+    - jika route memiliki parameter, kita bisa memberikanya sebagai parameter ke dua. contoh :
+
+    return redirect()->route('user', ['id' => 1]);
+
+    - atau jika misalkan kita melakukan redirect dengan parameter 'ID' yang di isi dari model eloquent, kita bisa memberikan model tersebut sebagai parameter, nantinya laravel akan mengekstrak id secara otomatis. contoh :
+
+    return redirect()->route('user', [$user]);
+
+    - jika kita ingin mengkustomisasi nilai yang ditempatkan di parameter route, kita bisa menentukanya di pendefinisian route parameter contoh : '/user/{id:name}'. atau bisa juga dengan menimpa / ovveride method getRouteKey() dari model eloquent. contoh :
+
+    public function getRouteKey(){
+        return $this->name;
+    }
+
+7. Cara redirect ke action controller.
+    - jika kita ingin men-generate redirect ke sebuah action dari controller, kita bisa gunakan method 'action()' dan memberikan array berisi class controller dan nama action yang diinginkan. contoh :
+
+    return redirect()->action([UserController::class, 'index']);
+
+    - jika route controllernya membutuhkan parameter, maka kita bisa memberikanya sebagai argument ke dua dari method 'action()'. contoh :
+
+    return redirect()->action([UserController::class, 'profile'], ['id' => 3]);
+
+8. Cara redirect ke domain lain.
+    - ketika kita ingin melakukan redirect ke domain diluar aplikasi laravel kita, kita bisa menggunakan method 'away()'. method ini akan menciptakan object RedirectResponse tanpa enkripsi, encoding dan validasi url tambahan. contoh :
+
+    return redirect()->away('https://domain-example.com');
+
+9. Cara redirect dengan data yang diflash ke session.
+    - jika kita ingin meredirect ke url lain sekaligus mem-flash data ke session, bisa dilakukan dengan membuat sebuah object RedirectResponse dan digabungkan dengan method 'with()'. contoh :
+
+    return redirect('/dashboard')->with('success', 'Profile berhasil diupdate !');
+
+    - selanjutnya setelah user di alihkan, kita bisa menampilkan pesan yang di flash ke session menggunakan blade misalnya. contoh :
+
+    @if(session('status'))
+        <div class='alert alert-success'>
+            {{ session('status') }}
+        </div>
+    @endif
+
+10. Tipe response lain ?
+    - method helper 'response()' dapat digunakan untuk menghasilkan tipe object response lain. saat method ini dipanggil tanpa argument apapun, sebuah contract 'Illuminate\Contracts\Routing\ResponseFactory' akan dikembalikan. contract ini menyediakan berbagai macam method yang berguna untuk menghasilkan response.
+    - misalkan ketika kita harus mengatur header dan status response tapi diwaktu yang sama kita juga harus mengembalikan sebuah view sebagai contentnya, kita bisa menggunakan method 'header()' dan 'view()' pada helper method response(). contoh :
+
+    return response()
+        ->view('home', 200)
+        ->header('Content-Type', 'text/html');
+
+    - jika kita ternyata tidak butuh untuk mengatur hedaer, kita bisa hanya menggunakan method 'view()'.
+
+11. Cara membuat response JSON.
+    - method 'json()' akan secara otomatis mengkonversi array yang diberikan menjadi JSON menggunakan method 'json_encode()' dan juga secara otomatis mengatur 'Content-Type' dari hedaer menjadi 'application/json'. contoh:
+
+    return response()->json([
+        'name' => 'zaidun',
+        'age' => 17
+    ]);
+
+    - jika kita ingin membuat sebuah response JSONP, kita bisa menggunakan method 'json()' dan diikuti dengan method 'withCallback()' dimana diisi dengan callback yang diambil dari request. contoh :
+
+    return response()->json([
+        'name' => 'zaidun',
+        'age' => 17
+    ])->withCallback($request->input('callback'));
+
+12. Response download.
+    - method 'download()' menghasilkan sebuah response yang memaksa browser user untuk mendownload file dengan path yang ditentukan. method ini menerima nama argument ke 2 sebagai nama file yang akan di lihat oleh user. selain itu kita juga bisa memberikan array dari HTTP header sebagai argument ke 3. contoh :
+
+    return response()
+        ->download($path, $filename, $headers);
+
+13. Response file.
+    - method 'file()' digunakan untuk menampilkan file, seperti gambar / PDF yang bisa dilihat secara langsung oleh user. method ini menerima absolut path sebagai argument pertamanya dan array dari HTTP header sebagai argument ke-2nya. contoh :
+
+    return response()
+        ->file($pathToFile, $headers);
+
+14. Response stream.
+    - saat kita mungkin memiliki data yang sangat besar dan ingin mengirimkanya ke client / user, alih alih kita menunggu memuat semua data hingga selesai, kita bisa mengirimkanya secara bertahap seiring data tersebut dihasilkan. dalam laravel kita bisa melakukanya menggunakan streamed response menggunakan method 'stream()'. contoh :
+
+    function streamedContent(): Generator
+    {
+        yield 'hello';
+        yield 'world';
+    }
+
+    Route::get('/streamed-response', function(){
+        return response()->stream(function(): void{
+            foreach(streamedContent() as $chunk){
+                echo $chunk;
+
+                ob_flush();
+                flush();
+                sleep(2);
+            }
+        }, 200, ['X-Accel-Buffering' => 'no']);
+    });

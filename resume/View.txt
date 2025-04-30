@@ -1,0 +1,62 @@
+1. Cara membuat dan me-Render view.
+    - untuk membuat view, buatlah file dengan extensi '.blade.php' di direktori 'resource/views/' dari aplikasi laravel yang telah dibuat. atau bisa juga dengan menggunakan perintah artisan 'php artisan make:view nama_view'.
+    - dengan menambahkan extensi '.blade.php' akan menginformasikan ke framework bahwa file tersebut mengandung blade template, yang akan memudahkan kita untuk meng-echo kan nilai, membuat pengkondisian, melakukan iterasi data dan masih banyak lainya.
+    - setelah view dibuat kamu dapat mengaksesnya menggunakan global helper method 'view()' melalui closure route / method controller aplikasi laravelmu. contoh :
+
+    Route::get('/profile', function(){
+        return view('profile', ['name' => $nama]);
+    });
+
+    - selain menggunakan global helper method 'view()', bisa juga menggunakan Facade 'View'. contoh :
+
+    return View::make('profile', ['name' => $name]);
+
+    - seperti yang dilihat, bahwa argument pertama dari global helper method 'view()' mempassing nama view, dan ke2 adalah data yang akan dikirimkan ke view.
+
+2. Direktori View bersarang.
+    - direktori view dapat dibuat bersarang, dan untuk mengaksesnya kita bisa menggunakan notasi 'dot' (.).  sebagai contoh, jika view berada di direktori 'resource/views/admin/profile.blade.php'. kita bisa mengaksesnya dengan :
+
+    return view('admin.profile', ['name' => $name]);
+
+    - tapi hal yang perlu diperhatikan adalah bahwa subdirektori / subfolder tidak boleh mengandung karakter 'dot' / titik.
+
+3. Membuat view yang bisa dicustomisasi ?
+    - method 'first()' dari facade 'View' memungkinkan kita untuk memilih view pertama yang tersedia dari daftar view yang disediakan. Mari lihat contoh berikut :
+
+    return View::first(['admin.profile', 'admin'], $data);
+
+    - dari view diatas, laravel akan mengarahkan ke view 'admin.profile' jika ada, jika tidak, maka akan diarahkan ke view 'admin'.
+
+4. Memeriksa apakah sebuah view tersedia.
+    - Jika kita ingin memeriksa apakah sebuah view tersedia, kita bisa menggunakan method 'exists()' dari facade View. contoh :
+
+    if(View::exists('admin.profile')){
+        // ...
+    }
+
+5. Passing data ke view.
+    - untuk memberikan / mengirimkan data ke view bisa dilakukan dengan memberikan argument ke 2 pada global helper method 'view()', dimana argument harus berupa array yang berisi pasangan key - value. contoh :
+
+    return view('admin.profile', ['id' => $user->id]);
+
+    - selanjutnya untuk mengaksesnya di view kita tinggal panggil key-nya sebagai variabel. contoh :
+
+    <p>{{ $id }}</p>
+
+6. mengirim data ke semua view.
+    - untuk mengirim data ke semua view di aplikasi laravel kita, bisa dengan menggunakan method 'share('key', 'value')' dari facade View. method ini di deklarasikan di dalam method boot dari ServiceProvider aplikasi laravel kita, seperti AppServiceProvider.php. contoh :
+
+    public function boot()
+    {
+        View::share('appName', 'LaraAppByIm');
+    }
+
+    - selanjutnya kita bisa mengakses data yang dikirim di semua view aplikasi laravel kita dengan meng-echo key dari data. contoh :
+
+    resources/Views/profile.blade.php
+
+    <p>{{ $appName }}</p>
+
+7. Mengirim data ke beberapa view menggunakan View::composer.
+    - Selain bisa mengirim view ke semua view, kita juga bisa mengirim data ke beberapa view yang ditentukan saja menggunakan method 'composer()' dari facade View.
+    - method ini menerima argument pertama berupa nama view dan argument ke-2 berupa class composer / function closure.

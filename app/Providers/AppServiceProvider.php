@@ -6,6 +6,7 @@ use App\Contracts\Mailer;
 use App\Models\Item;
 use App\Models\User;
 use App\Services\SmtpMailer;
+use App\View\Composers\TestComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -44,5 +45,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('upload', function(Request $request){
             return Limit::perMinute(5)->by($request->user()?->id ? : $request->ip());
         });
+
+        view()->share('appName', 'Lara App by Im.');
+
+        view()->composer('stream-download', TestComposer::class);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CheckProfileRoute;
+use App\Http\Middleware\EnsureSecurityToken;
 use App\Http\Middleware\RouteGroupMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'cek.profile' => CheckProfileRoute::class,
             'route.group.middleware' => RouteGroupMiddleware::class,
         ]);
+
+        // $middleware->append(EnsureSecurityToken::class);
+        // $middleware->prepend(RouteGroupMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

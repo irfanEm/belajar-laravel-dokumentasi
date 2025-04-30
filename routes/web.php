@@ -1,12 +1,15 @@
 <?php
 
 use App\Enums\Category;
+use App\Http\Controllers\BelajarMiddlewareController;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\SapaController;
 use App\Http\Controllers\UploadController;
+use App\Http\Middleware\EnsureSecurityToken;
 use App\Models\Item;
 use App\Models\ItemDetail;
 use App\Models\Post;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -335,3 +338,71 @@ Route::fallback(function(){
 Route::middleware('throttle:upload')->group(function() {
     Route::post('/route-limiter/upload', [UploadController::class, 'upload'])->name('upload_rate_limiter');
 })->name('RouteLImiterTest');
+
+// BELAJAR MIDDLEWARE
+
+Route::get('/global-middleware', [BelajarMiddlewareController::class, 'globalMiddleware'])->middleware(EnsureSecurityToken::class);
+
+// stream
+
+Route::get('/stream', function(){
+
+    return response()->stream(function(){
+        $handle = fopen('php://output', 'w');
+
+        fputcsv($handle, ['ID', 'Nama', 'Email']);
+
+        $students = Student::chunk(100, function($students) use ($handle){
+            foreach($students as $student) {
+                fputcsv($handle, [
+                    $student->id,
+                    $student->name,
+                    $student->email
+                ]);
+                ob_flush();
+                flush();
+            }
+        });
+
+        fclose($handle);
+    }, 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="students.csv"',
+        'X-Accel-Buffering' => 'no'
+    ]);
+});
+// streamDownload Route Test
+
+Route::withoutMiddleware([EnsureSecurityToken::class])->group(function(){
+
+    Route::get('/stream-download-page', function() {
+        // Pastikan view-nya ada
+        return response()
+            ->view('stream-download');
+    });
+
+    Route::get('/stream-download', function(){
+        $filename = 'users-' . now()->format('Y-m-d H:i:s') . '.csv';
+
+        return response()->streamDownload(function(){
+            $handle = fopen('php://output', 'w');
+
+            fputcsv ($handle, ['ID', 'Nama', 'Email', 'Tgl Daftar']);
+
+            Student::chunk(100, function($students) use ($handle) {
+                foreach($students as $student) {
+                    fputcsv($handle, [
+                        $student->id,
+                        $student->name,
+                        $student->email,
+                        $student->created_at->format('d-m-Y'),
+                    ]);
+                }
+            });
+
+            fclose($handle);
+
+        }, $filename);
+    });
+
+});

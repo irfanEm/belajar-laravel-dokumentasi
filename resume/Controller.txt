@@ -1,0 +1,326 @@
+Laravel's Controller resume based on documentation.
+
+1. Cara membuat controler.
+    - untuk membuat controller gunakan perintah :
+
+    php artisan make:controller NamaController
+
+    - contoh cara pemanggilan controller di Route :
+
+    Route::get('/contoh-url', [NamaController::class, 'namaMethod']);
+
+2. Single action controller
+    - jika controllermu hanya memiliki 1 method saja, kamu dapat membuat single action controller dengan menggunakan perintah :
+
+    php artisan make:controller NamaController --invokable
+
+    - atau dengan cara membuat method __invoke() pada controller biasa. contoh :
+
+    class BasicController extends Controller
+    {
+        public function __invoke(){
+            // code
+        }
+    }
+
+    - dan untuk pemanggilan controller di route cukup memanggil class controllernya saja. contoh :
+
+    Route::get('/url-contoh', BasicController::class);
+
+3. cara menggunakan middleware di dalam sebuah controller.
+    - untuk menggunakan middleware di dalam sebuah controller bisa dengan cara memanggil / menugaskan method 'middleware()' pada route. contoh :
+
+    Route::get('/contoh-url', [ContohController::class, 'index'])->middleware(NamaMiddleware::class);
+
+    - cara ke 2 dengan mengimplementasikan interface HasMiddleware, yang akan memaksa controller untuk menggunakan method static 'middleware()'. selanjutnya kembalikan sebuah array yang berisi middleware yang ingin digunakan. contoh :
+
+    class ContohController extends Controller impelents HasMiddleware
+    {
+        public static function middleware(): array
+        {
+            return [
+                'auth',
+                new Middleware('log', only: ['index']),
+                new Middleware('', except: ['store']),
+            ];
+        }
+    }
+
+    - cara ke 3 dengan mengembalikan closure didalam static method middleware. contoh :
+
+    class ContohController extends Controller impelents HasMiddleware
+    {
+        public static function middleware(): array
+        {
+            return [
+                function (Request $request, Closure $handle) {
+
+                    return $next($request);
+                }
+            ];
+        }
+    }
+
+4. Cara membuat resource controller.
+    - resource controller adalah controller yang secara otomatis akan memiliki method untuk CRUD (create, read, update, delete).
+    - cara membuatnya adalah dengan cara menambahkan option '--resource' pada perintah artisan. contoh :
+
+    php artisan make:controller PostController --resource
+
+5. Cara mengakses resource controller.
+    - Untuk mengakses resource controller cukup dengan mendefinisikan sebuah resource route. contoh :
+    jika sebelumnya sudah memiliki resource controller yang menghandle data post, kita bisa membuat resource route sbb:
+
+    Route::resource('phosts', PostController::class);
+
+    - dengan route tersebut kita kana memiliki route berikut :
+
+    NO  | HTTP VERB |  URL                | ACTION  |    NAMA ROUTE    |
+    ----------------------------------------------------------------   |
+    1   | GET       |  /posts             | index   |    posts.index   |
+    2   | GET       |  /posts/create      | create  |    posts.create  |
+    3   | POST      |  /posts             | store   |    posts.store   |
+    4   | GET       |  /posts/{id}        | show    |    posts.show    |
+    5   | GET       |  /posts/{post}/edit | edit    |    posts.edit    |
+    6   | PUT/PATCH |  /posts/{post}      | update  |    posts.update  |
+    7   | DELETE    |  /posts{posts}      | destroy |    posts.destroy |
+
+6. Cara customisasi perilaku model yang tidak ditemukan.
+    - untuk melakukan customisasi perilaku dari model resource yang tidak ditemukan (missing), gunakan method missing pada resource route. contoh :
+
+    Route::resource('posts', PostController::class)
+        ->missing(function(Request $request){
+            return Redirect::route('posts.index');
+        });
+
+7. Cara mendapatkan data yang di soft deletes pada route resource.
+    - Secara default resource route tidak akan menyertakan data yang telah di soft deletes pada model yang diambil. jika ingin menyertakan data yang telah di soft deletes gunakan method 'withTrashed()' pada route resource. contoh :
+
+    Route::resource('posts', PostController::class)->withTrashed();
+
+    - secara default ketika menggunakan method 'withTrashed()' tanpa argument akan menyertakan data yang telah dihapus pada semua method dari resource route. jika ingin hanya menerapkanya pada method tertentu, bisa dengan menambahkan argument. contoh :
+
+    Route::resource('posts', PostController::class)->withTrashed(['show']);
+
+8. Cara menspesifikasikan Model dari Resource.
+    - jika ingin method dari controller resource memiliki model binding tertentu secara otomatis, tambahkan option '--model=NamaModel' pada saat membuat controller resource menggunakan perintah artisan. contoh :
+
+    php artisan make:controller PostController --model=Post --resource
+
+    dengan perintah ini otomatis method didalam controller akan memiliki model binding Posts. contoh :
+
+    class PostController extends Controller
+    {
+        public function show(Post $post)
+        {
+            // code
+        }
+    }
+
+9. Cara secara otomatis membuat class form request pada resource controller.
+    - tambahkan option --request pada saat menjalankan perintah artisan pada saat membuat resource controller, agar secara otomatis method store dan update dari resource controller memiliki class request pada model bindingnya. contoh :
+
+    php artisan make:controller PostController --model=Post --request --resource
+
+    secara otomatis maka method store dan update dari controller tersebut akan memiliki binding request pada method dan update-nya. contoh :
+
+    public function store(StorePostRequest $request)
+    {
+        // code
+    }
+
+10. Cara menentukan action tertentu pada resource route.
+    - jika ingin menentukan hanya action tertentu yang dihandle tertentu oleh resource route, gunakan method 'only()' atau 'except()'. cotnoh :
+
+    Route::resource('posts', PostController::class)->only(['show', 'index']);
+
+    Route::resource('posts', PostController::class)->except(['delete', 'update', 'edit']);
+
+11. Cara membuat resource route khusus untuk api.
+    - jika resource route akan digunakan untuk api, gunakan method 'apiResourece()' pada route resource, agar method yang menampilkan form html seperti 'create()' dan 'update' tidak ditampilkan. contoh :
+
+    Route::apiResourece('posts', PostController::class);
+
+    - jika ingin mendeklarasikan lebih dari satu controller, gunakan array sebagai parameter ke2. contoh:
+
+    Route::apiResourece('posts', [
+        PostController::class,
+        ProductController::class
+    ]);
+
+    - jika ingin membuat resource route api secara cepat, gunakan option '--api' pada perintah artisan saat membuat resource controller. contoh :
+
+    php artisan make:controller PostController --api
+
+12. Resource Bersarang.
+    - untuk mendefinisikan route ke sebuah resource bersarang, gunakan notasi 'dot' (.). Sebagai contoh misalkan sebuah resource photo memiliki banyak comment yang dilampirkan ke photo tersebut. contoh :
+
+    Route::resource('photos.comments', PhotoCommentController::class);
+
+    resource route diatas akan menghasilkan URl sebagai berikut :
+
+    /photos/{photo}/comments/{comment}
+
+13. Sarang Dangkal.
+     - cara menerapkan shallwo nesting pada resource route, gunakan method 'shallow()' pada resource route. contoh :
+
+     Route::resource('photos.comments', CommentController::class)->shallow();
+
+    dengan shallow nesting route yang dihasilkan akan lebih ringkas. contoh :
+
+    ROUTE AWAL                              SHALLOW ROUTE
+    /photos{photo}/comments/{comment}       /photos{photo}/comment
+
+14. Cara mengganti nama default pada resource route.
+    - untuk mengganti nama default pada resource route, gunakan method 'names()' pada resource route dan berikan array nama yang diinginkan. contoh :
+
+    Route::resource('photos', PhotoController::class)->names([
+        'create' => 'photos.build',
+    ]);
+
+15. Cara mengganti nama parameter default pada resource route.
+    - Secara default nama parameter dari resource route adalah bentuk singular dari nama resourcenya. contoh resource dengan nama 'photos' maka nama parameternya 'photo'.
+    - jika ingin mengganti nama parameter resource route gunakan method 'parameters()' pada resource route, dan berikan sebuah argument berupa array assosiatif dari nama resource dan nama parameter. contoh :
+
+    Route::resource('photos', PhotoController::class)->parameters([
+        'photos' => 'user_photo'
+    ]);
+
+    dengan route diatas maka akan menghasilkan url untuk route misal show sbb:
+
+    '/photos/{user_photo}
+
+16. Cara mengubah kolom yang dijadikan kunci dalam nested resource.
+    - untuk mengubah kolom yang dijadikan kunci untuk mencari data resource child dari resource parent pada nested resource, gunakan method 'scoped()' dan berikan array yang berisi nama kolom default dan nama kolom yang diinginkan. contoh :
+
+    Route::resource('photos.comments', CommentPhotoController::class)->scoped([
+        'comment' => 'slug'
+    ]);
+
+    - route diatas akan menghasilkan sebuah resource bersarang yang dapat diakses melalui url seperti :
+
+    /photos/{photo}/comments{comment:slug}
+
+    dengan route diatas, maka laravel akan mencari berdasarkan 'slug' dan memastikan bahwa comment tersebut adalah milik photo yang ditentukan.
+
+17. Cara me-lokalisasikan Url resource route.
+    - Secara default laravel akan membuat resource URl menggunakan kata kerja bahasa inggris dan aturan jamak. jika kamu ingin melokalisasi (menggunakan kata kerja local) kata kerja dari method create dan edit, gunakan method 'Route::resourceVerbs()' pada bagian awal method 'boot()' di file 'App\Providers\AppServiceProvider'. contoh :
+
+    public function method boot(): void
+    {
+        Route::resourceVerbs([
+            'create' => 'buat',
+            'edit' => 'ubah',
+        ]);
+    }
+
+    - sehingga sebuah route resource misal Route::resource('photos', PhotoController::class) akan memiliki url untuk create dan edit sbb :
+
+    /photos/buat
+    /photos/{photo}/ubah
+
+18. Cara menambahkan route di luar set resource route.
+    - jika memiliki route tambahan selain route yang tersedia di route resource, pastikan untuk mendefinisikan sebelum route resource. contoh:
+
+    // route tambahan
+    Route::get('/photos/popular', [PhotoController::class, 'popular']);
+    // resource route
+    Route::resource('photos', PhotoController::cara);
+
+19. Singleton resource
+    - jika aplikasi laravel mu memiliki resource yang hanya memiliki object tunggal, sebagai contoh seorang user mungkin hanya memiliki tidak lebih dari 1 profile, yang mereka dapat ubah. untuk kasus seperti ini kamu bisa meregistrasikan resource singleton menggunakan method 'singleton()'. contoh :
+
+    Route::singleton('profile', ProfileController::class);
+
+    dengan route diatas, akan menghasilkan URL route berikut :
+
+    VERBS       | URl              | Action    | Route names    |
+    ============================================================|
+    GET         | /profile         | show      | profile.show   |
+    GET         | /profile/edit    | edit      | profile.edit   |
+    PUT/PATCH   | /profile         | update    | profile.update |
+
+    - dapat dilihat bahwa route create dan delete tidak tersedia untuk resource singleton, dan juga tidak menerima identifier karena hanya satu object yang tersedia.
+
+20. Nested singleton resource
+    - singleton resource juga bisa nested dengan standard resource. contoh :
+
+    Route::singleton('photos.thumbnail', ThumbnailController::class);
+
+    - resource route diatas akan menghasilkan URl route berikut :
+
+    VERBS       | URl                               | ACTION    | ROUTE NAME    |
+   =============================================================================|
+    GET         | /photos/{photo}/thumbnail         | show      | profile.show  |
+    GET         | /photos/{photo}/thumbnail/edit    | edit      | profile.edit  |
+    PUT/PATCH   | /photos/{photo}/thumbnail         | update    | profile.update|
+
+21. Enable create-able method di singleton resource.
+    - jika mungkin ingin mengaktifkan createable method di singleton resource gunakan method 'creatable()' pada resource route. contoh :
+
+    Route::singleton('profile', ProfileController::class)->creatable();
+
+    dari route diatas maka akan menghasilkan URl route berikut :
+
+
+    Verb	    | URI	            | Action	| Route Name
+    =======================================================================
+    GET	        | /profile/create	| create	| photos.thumbnail.create
+    POST	    | /profile	        | store	    | photos.thumbnail.store
+    GET	        | /profile	        | show	    | photos.thumbnail.show
+    GET	        | /profile/edit	    | edit	    | photos.thumbnail.edit
+    PUT/PATCH	| /profile	        | update	| photos.thumbnail.update
+    DELETE	    | /profile	        | destroy	| photos.thumbnail.destroy
+
+22. Cara enable delete() method pada singleton resource tanpa mengaktifkan create() method.
+    - untuk melakukanya gunakan method 'destroyable()' pada singleton resource route. contoh :
+
+    Route::singleton(...)->destroyable();
+
+23. API Singletone Resource
+    - jika kamu ingin menggunakan singleton resource via api, gunakan method 'apiSingleton()'. contoh :
+
+    Route::apiSingleton('profile', ProfileController::class);
+
+    jika ingin mengaktifkan route creatable pada singleton api resource gunakan method 'creatable()'. contoh :
+
+    Route::apiSingleton('profile', ProfileController::class)->creatable();
+
+24. Cara Dependencies injection di controller.
+    - untuk menyuntikan dependencies apapun yang kamu butuhkan didalam controller, cukup dengan mengetikanya di dalam constructor, karena secara otomatis laravel akan meresolve-nya melalui service container. contoh :
+
+    namespace App\Http\Controllers;
+    use App\Repositories\UserRepository;
+
+    class UserController extends Controller
+    {
+        public function __construct(
+            protected UserRepository $users,
+        ) {}
+    }
+
+    - ke 2 bisa dengan cara melakukan injection (penyuntikan) langsung di dalam method controllernya. contoh paling umum yang sering digunakan adalah injection object 'Illuminate\Http\Request' didalam method controller. contoh:
+
+    class UserController extends Controller
+    {
+        public function store(Request $request)
+        {
+            $name = $request->name;
+            // ...
+        }
+    }
+
+    - selain bisa mengetikan object dependencies yang dibutuhkan, method controller juga bisa menerima input dar parameter route. misalkan kamu punya route seperti ini :
+
+    Route::get('/user/{user}, [UserController::class, 'update']);
+
+    selanjutnya method controller bisa didefinisikan sbb :
+
+    class UserController extends Controller
+    {
+        public function update(Request $request, string $user)
+        {
+            $name = $request->name;
+            // ...
+        }
+    }

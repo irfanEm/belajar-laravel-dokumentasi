@@ -1,0 +1,49 @@
+Laravel's CSRF Protection resume based on documentation.
+
+1. Pengertian.
+    - adalah jenis eksploitasi berbahaya dimana perintah yang tidak sah dilakukan oleh user yang tidak sah / belum diautentikasi.
+
+2. Cara menangkap / mengambil nilai csrf token di laravel.
+    - untuk menangkap nilai csrf bisa menggunakan method method 'token()' pada object Request, atau menggunakan helper function 'csrf_token()'. contoh :
+
+    Route::get('/url-sample', function(Request $request){
+        // menggunakan method token()
+        $token = $request->session()->token();
+
+        // menggunakan helper function csrf_token()
+        $token = csrf_token();
+    });
+
+    - pastikan untuk menambahkan input type hidden dengan name '_token' dengan value dari csrf_token(). atau lebih mudahnya bisa menggunakan @csrf. contoh :
+
+    <form method="POST" action="/profile">
+        @csrf
+
+        <!-- Equivalent to... -->
+        <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+    </form>
+
+3. Cara mengecualikan / exclude URL tertentu dari CSRF Protection.
+    - Untuk mengecualikan url dari csrf protection laravel, gunakan method 'validateCsrfToken()' dengan named argument 'except: ' pada method 'withMiddleware()' di dalam file bootstrap/app.php. contoh :
+
+    ->withMiddleware(function(Middleware $middleware){
+        $middleware->validateCsrfToken(except: [
+            'http://contoh.com/foo/bar',
+            'https://contoh-url.com/foo',
+        ]);
+    });
+
+    - untuk kenyamanan middleware csrf secara otomatis di disable untuk semua route ketika menjalankan unit tests.
+
+4. Cara menyimpan nilai csrf token didalam tag meta.
+    - Karena middleware ValidateCsrfToken tidak hanya memeriksa token yang dikirim melalui POST, tetapi juga memeriksa token yang ada di request header. kamu bisa menyimpan nilai csrf token di tag meta. contoh :
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    // atur meta tag menggunakan ajax
+
+    $.ajaxsetup({
+        headers : {
+            'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('content')
+        }
+    });

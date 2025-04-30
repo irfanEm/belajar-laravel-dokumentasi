@@ -1,0 +1,174 @@
+Laravel's Request resume based on documentation.
+
+1. Cara mengakses object Request.
+    - untuk mendapatkan object dari HTTP Request terkini melalui dependency injection, cukup ketikan class 'Illuminate\Http\Request' ke dalam closure function dari route / method controller aplikasi laravel. contoh :
+
+    // contoh di closure function
+    Route::get('/user', function(Request $request){
+        // ..
+    });
+
+    // contoh di method controller
+    class UserController extends Controller
+    {
+        public function store(Request $request)
+        {
+            // ..
+        }
+    }
+
+    - jika method controller mengharapkan input dari parameter route, bisa dengan cara mengetikan parameter route setelah dependency. contoh :
+
+    class UserController extends Controller
+    {
+        public function store(Request $request, string $id)
+        {
+            // ..
+        }
+    }
+
+2. Cara mendapatkan url / path dari HTTP request yang masuk.
+    - mengakses / mendapatkan path dari HTTP Request terkini bisa dilakukan dengan method 'path()' dari object request. contoh :
+
+    $url = $request->path();
+
+    sehingga jika request yang masuk itu menuju 'http://contohweb.com/foo/bar' maka $url akan berisi 'foo/bar'.
+
+3. Cara memeriksa path dari http request yang masuk.
+    - jika ingin memastikan apakah path dari request yang masuk sesuai dengan pola tertentu gunakan method 'is()'. contoh :
+
+    if($request->is('admin/*')){
+        // ..
+    }
+
+    tanda '*' bisa digunakan sebagai wildcard ketika menggunakan method ini.
+
+4. Cara memeriksa request yang masuk berdasarkan nama route.
+    - method 'routeIs()' memungkinkan untuk memeriksa apakah request yang masuk  berasal dari route dengan nama yang ditentukan. contoh :
+
+    if($request->routeIs('admin.*')){
+        // ..
+    }
+
+5. Cara mengambil full URl dari request.
+    - method 'url()' akan mengembalikan full url dari sebuah request tanpa query string.
+    - sedangkan method 'fullUrl()' akan mengembalikan full url dari request dengan query stringnya. contoh :
+
+    $url = $request->url();
+    $urlFull = $request->fullUrl();
+
+6. cara menambahkan query string ke URl terkini.
+    - method 'fullUrlWithQuery()' digunakan untuk menambahkan query string ke dalam url terkini. method ini akan menggabungkan variabel array yang berisi query string dengan query string yang sudah ada. contoh :
+
+    $request->fullUrlWithQuery(['type' => 'phone']);
+
+7. cara mengmabil URl terkini tanpa string parameter.
+    - method 'fullUrlWithoutQuery([])' memungkinkan untuk mengambil url penuh dari request dengan tanpa query string. contoh :
+
+    $request->fullUrlWithoutQuery(['type']);
+
+8. Cara mengambil data host dari request yang masuk.
+    - untuk mengambil data host dari request yang masuk gunakan method : 'host()', 'httpHost()', 'schemeAndHttpHost()'. contoh :
+
+    $host = $request->host();
+    $host2 = $request->httpHost();
+    $host3 = $request->schemeAndHttpHost();
+
+9. Cara mengambil data method dari request yang masuk.
+    - untuk mengambil data method dari request yang masuk gunakan method 'method()', selain itu method 'isMethod()' juga bisa digunakan untuk memverifikasi apakah method dari request yang masuk sesuai dengan pola yang ditentukan. contoh :
+
+    $method = $request->method();
+
+    if($request->isMethod('post')){
+        //...
+    }
+
+10. Cara mengambil data header dari request yang masuk.
+    - method 'header()' digunakan untuk mengambil data header dari request yang masuk. method ini akan mengembalikan null jika header yang dicari tidak ada. selain itu bisa juga menambahkan argument opsional ke 2 sebagai nilai default, jika data header yang dicari tidak ditemukan. contoh:
+
+    $header = $request->header('X-HEADER-NAME');
+    $header = $request->header('X-HEADER-NAME', 'hello-world');
+
+    - method 'hasHeader()' bisa digunakan untuk mengecek apakah request yang masuk memiliki data header sesuai dengan nilai yang ditentukan. contoh :
+
+    if($request->hasHeader('X-HEADER-NAME'))
+    {
+        //..
+    }
+
+    - data bearer token dari header bisa diambil menggunakan method 'bearerToken()'. method ini akan mengembalikan string kosong jika data tidak ditemukan. contoh :
+
+    $bearerToken = $request->bearerToken();
+
+11. Cara menngambil data IP dari Request.
+    - untuk mengambil data IP dari request, jika hanya ingin mengambil IP dari client yang membuat request saja gunakan method 'ip()' jika ingin mengambil semua IP yang diteruskan oleh proxy dalam bentuk array gunakan method 'ips()', dengan method ini IP client akan berada di urutan akhir. contoh :
+
+    $ip = $request->ip();
+    $ips = $request->ips();
+
+12. Cara memeriksa tipe content yang diminta dari request yang masuk.
+    - untuk mendapatkan type content apa saja yang di terima (accept) oleh request yang masuk melalui header 'Accept', gunakan method 'getAcceptableContentTypes()'. contoh :
+
+    $accpetableTypes = $request->getAcceptableContentTypes();   // contoh output = ['text/html', 'application/json']
+
+    - untuk memeriksa apakah request bisa menerima type content tertentu, gunakan method 'accepts()'. method ini akan mengembalikan true jika type content yang ditentukan dapat diterima oleh request dan false jika sebaliknya. contoh :
+
+    if($request->accepts(['text/html', 'application/json'])){
+        //..
+    }
+
+    - untuk menentukan tipe konten yang paling di rekomendasikan dari array yang ditentukan gunakan method 'prefers()'. method ini akan mengembalikan null jika tipe konten didalam array tidak ditemukan.
+
+    $prefered = $request->prefers(['text/html', 'application/json']);
+
+    - jika ingin memeriksa apakah request mengharapkan type Json gunakan method 'expectsJson()'. contoh :
+
+    if($request->expectsJson())
+    {
+        //..
+    }
+
+13. Cara mengambil request PSR-7.
+    - PSR-7 menentukan interface untuk pesan HTTP. Jika ingin mengambil request PSR-7 dari pada request dan response laravel, pertama install beberapa library berikut :
+
+    composer require symfony/psr-http-message-bridge
+    composer require nyholm/psr7
+
+    - setelah 2 library ini terinstall, sekarang bisa mengambil request PSR-7 dengan mengetikan interface pada closure route / method controller. contoh :
+
+    Route::get('/', function(ServerRequestInterface $request) {
+        //..
+    });
+
+14. Cara mengambil semua data input.
+    - method 'all()' digunakan untuk mengambil semua data input dari request yang masuk sebagai sebuah array. method ini tidak perduli apakah data input berasal dari form HTML atau request XHR. contoh :
+
+    $input = $request->all();
+
+    - dengan method 'collect()' data input request yang masuk akan diberlakukan sebagai collection. contoh :
+
+    $collection = $request->collect();
+
+    - method 'collect()' juga memungkinkan untuk mengambil sebagian input data request sebagai collection. contoh :
+
+    $users = $request->collect('users')->each(function(string $user){
+        //..
+    });
+
+ 15. Cara mengambil nilai input dari object Request.
+    - gunakan method 'input()' jika ingin mengambil nilai input tanpa perduli HTTP Verb apa yang digunakan. contoh:
+
+    $name = $request->input('name');
+
+    - berikan argument ke-2 sebagai nilai default jika input yang diambil tidak tersedia. contoh :
+
+    $name = $request->input('name', 'Zaidun');
+
+    - gunakan notas '.' (dot) jika data input berupa array bersarang. contoh :
+
+    $name = $request->input('product.0.name');
+    $name = $request->input('product.*.name');
+
+    - memanggil method 'input()' tanpa argument apapun akan mengambil semua data input sebagai array assosiatif. contoh :
+
+    $input = $request->input();
