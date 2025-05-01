@@ -1,0 +1,63 @@
+BLADE TEMPLATE.
+
+#Intro
+
+File blade template menggunakan extensi '.blade.php'.
+File blade template biasanya disimpan di direktori 'resource/views'
+View blade bisa di return langsung dari route ataupun method controller menggunakan global helper function 'view()'.
+Seperti yang sudah dijelaskan pada materi view, kita bisa mengirimkan data ke view, dengan menjadikanya sebagai argument ke dua dari global helper function view(). contoh :
+
+    Route::get('/test', function(){
+        return view('test', ['data' => 'hello test']);
+    });
+
+#Menampilkan Data
+
+Untuk menampilkan data di blade template, kita bisa gunakan tanda double kurung kurawal ({{  }}).
+Sebagai contoh, misalkan data dikirim dari Route sebagai berikut :
+
+    Route::get('/test', function(){
+        return view('test', ['data' => 'hello test']);
+    });
+
+Selanjutnya untuk menampilkanya di view test.blade.php, kita bisa lakukan berikut :
+
+    {{ data }}
+
+Statement echo dari blade template yaitu double kurung kuraawal ({{  }}), secara otomatis akan menjalankan function 'htmlspecialchars()' untuk mencegah serangan XSS.
+Selain itu, statement echo blade template juga bisa menampilkan hasil dari function php apapun. sehingga memungkinkan kita untuk menuliskan function php apapun di dalam statement echo blade template. contoh :
+
+    hari ini tanggal {{ date("d-m-y") }}
+
+#Mendaftarkan Components Package Secara manual.
+
+saat kita ingin membangun package yang memanfaatkan component blade, kita harus mendaftarkan nama class, dan tag html alias secara manual ke dalam method boot dari service provider package.
+cara mendaftarkanya ada 2 macam, yaitu menggunakan method 'component('tag-alias', NamaClass::class)'. contoh
+
+Blade::component('alert', Alert::classs);
+
+atau menggunakan componentNamepace('Contoh\\Namespace\\Random', 'tag-alias');
+
+contoh cara menggunakanya : <x-alert/>
+kelebihan dari method componentNamespace adalah ketika didalam package terdapat lebih dari 2 namespace kita bisa menggunakan semuanya. contoh :
+
+<x-alert::alertsatu/>
+<x-alert::alertdua/>
+
+# Merender Component.
+
+Untuk menampilkan component, kita bisa menggunakan tag component blade di salah satu template blade.
+Tag component blade, dimulai dengan string 'x-' selanjutnya diikuti dengan nama class component yang ditulis dengan format camel-case. contoh :
+
+    <x-alert/>
+
+jika class component berada di direktori yang lebih dalam dari direktori 'app/View/Components', kita bisa menggunakan tanda titik (.) untuk mengindikasi direktori bersarang.
+sebagai contoh, misal component input berada di direktori 'app/View/Components/Forms/Input.php', kita bisa merendernya dengan menuliskanya sebagai berikut :
+
+    <x-forms.input/>
+Jika kita ingin merender component secara kondisional, kita bisa melakukanya dengan mendefinisikan method 'shouldRender()' di dalam component class kita. Jika method shouldRender mengembalikan false, maka component tidak akan dirender. contoh :
+
+    public function shouldRender(): bool
+    {
+        return Str::length($this->message)>0;
+    }
