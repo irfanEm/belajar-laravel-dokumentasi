@@ -123,3 +123,29 @@ contoh :
 kemudian disaat kita ingin menggunakanya di attribut HTML, kita bisa menuliskanya sbb :
 
     <x-alert alert-type="danger" />
+
+#Short Attribute Syntax
+Saat kita mem-passing attribute ke component, kita juga bisa menggunakan syntax short attribute.
+Ini lebih nyaman digunakan, karena nama attribute akan mencocokan nama variabel yang sesuai dengan mereka.
+contoh :
+
+    // ini menggunakan syntax short attribute
+    <x-profile :$userId :$name />
+
+    // syntax diatas, itu sama dengan syntax berikut :
+    <x-profile :user-id = "$userId" :name = "$name" />
+
+#Escaping Attribute Render
+Beberapa Framework Javascript juga menggunakan awalan tanda titik dua (:).
+Jika kita ingin memberitahu blade, bahwa attribute tersebut bukan merupakan expresion PHP, kita bisa menggunakan awalan double titik dua (::).
+contoh :
+
+    <x-button ::class={ danger: isDeleting } />
+        Submit
+    </x-button>
+
+    kode diatas akan dirender menjadi :
+
+    <button :class="{ danger: isDeleting }">
+        Submit
+    </button>
