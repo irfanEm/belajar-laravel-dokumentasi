@@ -61,3 +61,56 @@ Jika kita ingin merender component secara kondisional, kita bisa melakukanya den
     {
         return Str::length($this->message)>0;
     }
+
+# Index Components
+
+Mungkin terkadang kita memiliki / ingin mengelompokan component yang cocok kedalam sebuah grup. contoh :
+
+    App\View\Components\Card\Card
+    App\View\Components\Card\Header
+    App\View\Components\Card\Footer
+
+saat kita lihat contoh diatas, mungkin kita berpikir bahwa untuk merender component 'card' kita harus menggunakan '<x-card.card/>'.
+Tapi kita tidak harus melakukan hal tersebut, didalam laravel ketika nama component sama dengan nama direktori component, maka laravel secara otomatis akan menganggap nama component sebagai akar (root) dari component tersebut. dan memungkinkan kita untuk merender component tersebut tanpa perlu mengulang namanya. contoh :
+
+    <x-card>
+        <x-card.head>...</x-card.head>
+        <x-card.footer>...</x-card.footer>
+    </x-card>
+
+# Mem-passing data ke Component.
+
+Kita bisa memberikan / mem-passing data ke component menggunakan attribut string HTML yang mana harus diawali / menggunakan prefix karakter titik dua (:).
+contoh :
+
+    <x-alert :message="$message"/>
+
+Selanjutnya kita harus mendefinisikan semua data attribute component ke constructor class.
+Semua properti public dari component akan secara otomatis tersedia (available) di view component, tanpa harus kita mengirimkanya ke view melalui method render dari component.
+contoh :
+
+    namespace App\View\Components;
+
+    use Illuminate\View\Component;
+    use Illuminate\View\View;
+
+    class Alert extends Component {
+
+        public function __construct()
+        {
+            public string $type;
+            public string $message;
+        }
+
+        public function render()
+        {
+            return view('components.alert');
+        }
+    }
+
+Selanjutnya jika kita ingin menampilkan konten dari variable public component, kita bisa meng-echokan nama variabel tersebut.
+contoh :
+
+    <div class"alert alert-{{ $type }}" >
+        {{ $message }}
+    </div>
