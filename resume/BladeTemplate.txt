@@ -96,11 +96,10 @@ contoh :
 
     class Alert extends Component {
 
-        public function __construct()
-        {
-            public string $type;
-            public string $message;
-        }
+        public function __construct(
+            public string $type,
+            public string $message
+        ) {}
 
         public function render()
         {
@@ -114,3 +113,13 @@ contoh :
     <div class"alert alert-{{ $type }}" >
         {{ $message }}
     </div>
+
+# Case
+Saat menuliskan argument constructor component, kita harus menggunakan format CamelCase, sedangkan disaat kita menuliskan nama argument didalam attribut HTML, gunakan format kebab-case.
+contoh :
+
+    public function __construct(stirng $alertType) {}
+
+kemudian disaat kita ingin menggunakanya di attribut HTML, kita bisa menuliskanya sbb :
+
+    <x-alert alert-type="danger" />
