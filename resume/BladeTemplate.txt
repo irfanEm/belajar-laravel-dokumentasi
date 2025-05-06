@@ -149,3 +149,54 @@ contoh :
     <button :class="{ danger: isDeleting }">
         Submit
     </button>
+
+# Component method
+Selain variabel public yang tersedia di template component, semua method public juga dapat dipanggil di template component.
+contoh :
+
+    misalkan kita punya method berikut :
+
+    public function isSelected(string $option): bool
+    {
+        return $option === $this->selected;
+    }
+
+selanjutnya kita bisa memanggil method tersebut dari template component, dengan memanggilnya sebagai variabel dengan nama yang sesuai dengan nama method.
+contoh :
+
+    <option {{ $isSelected($value) ? 'selected' : '' }} value="{{ $value }}">
+        {{ $label }}
+    </option>
+
+#Accessing Attributes & Slots Within Component class
+Blade component memungkinkan kita untuk mengakses nama component, attribut, dan slot dari dalam method render dari class component.
+Untuk bisa mengakses data tersebut, kita harus mengembalikan closure function didalam method render.
+contoh :
+
+    public function render(): Closure
+    {
+        return function() {
+            return "<div {{ $attributes }}>Components content</div>":
+        }
+    }
+
+Method render ini juga bisa menerima data yang berisi array, dimana data ini merupakan satu satunya argument dari method ini.
+Data array berisi beberapa element yang menyediakan informasi tentang component.
+contoh :
+
+    public function render(): Closure
+    {
+        return function($data) {
+            // $data['componentName'];
+            // $data['attributes'];
+            // $data['slot'];
+
+            return "<div {{ $attributes }}>Components content</div>":
+        }
+    }
+
+'componentName' itu sama dengan nama tag HTML yang ada setelah tanda 'x-'. contoh componentName untuk '<x-alert class="alert-success" id="alert" />' adalah 'alert'.
+'attributes' itu berisi semua attribute yang ada di tag HTML, misal dalam contoh diatas adalah : ['class=>alert-success', 'id=>alert'].
+'slot' adalah sebuah object 'Illuminate\Support\HtmlString' dengan dengan content dari component slot.
+
+NOTE : Jangan pernah mengembed data element yang ada di $data secara langsung ke string yang di return oleh method render, karena hal tersebut dapat memungkinkan eksekusi kode jarak jauh melalui content attribut yang berbahaya.
