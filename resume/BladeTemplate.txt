@@ -198,5 +198,6 @@ contoh :
 'componentName' itu sama dengan nama tag HTML yang ada setelah tanda 'x-'. contoh componentName untuk '<x-alert class="alert-success" id="alert" />' adalah 'alert'.
 'attributes' itu berisi semua attribute yang ada di tag HTML, misal dalam contoh diatas adalah : ['class=>alert-success', 'id=>alert'].
 'slot' adalah sebuah object 'Illuminate\Support\HtmlString' dengan dengan content dari component slot.
+function closure harus mengembalikan string, lalu jika string yang dikembalikan itu sesuai dengan view yang ada, maka view tersebut akan di render, jika tidak maka string akan dirender sebagai blade view inline.
 
 NOTE : Jangan pernah mengembed data element yang ada di $data secara langsung ke string yang di return oleh method render, karena hal tersebut dapat memungkinkan eksekusi kode jarak jauh melalui content attribut yang berbahaya.
