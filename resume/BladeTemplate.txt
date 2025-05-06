@@ -201,3 +201,26 @@ contoh :
 function closure harus mengembalikan string, lalu jika string yang dikembalikan itu sesuai dengan view yang ada, maka view tersebut akan di render, jika tidak maka string akan dirender sebagai blade view inline.
 
 NOTE : Jangan pernah mengembed data element yang ada di $data secara langsung ke string yang di return oleh method render, karena hal tersebut dapat memungkinkan eksekusi kode jarak jauh melalui content attribut yang berbahaya.
+
+# Dependencies Tambahan.
+- Jika component kita membutuhkan dependencies dari service container, kita bisa me-list dependencies yang dibutuhkan sebelum setiap data attribute dari component kita.nantinya secara otomatis dependencies akan disuntikan ke container.
+contoh :
+
+    public function __construct(
+        public AlertCreator $alertCreator;
+        public string $type;
+        public string $message;
+    ){}
+
+# Menyembunyikan Methods / Properties.
+- Jika kita ingin mencegah method / properti public kita terekspos sebagai variabel di template component kita, kita bisa menambahkanya ke properti array $expect dari component kita.
+contoh :
+
+    class Alert extends Components
+    {
+        protected $expect = ['type'];
+
+        public function __construct(
+            public string $type;
+        ){}
+    }
