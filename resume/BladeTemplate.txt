@@ -218,9 +218,58 @@ contoh :
 
     class Alert extends Components
     {
+        // masukan properti / method yang ingin kita hide
         protected $expect = ['type'];
 
         public function __construct(
             public string $type;
         ){}
     }
+
+# Attribute Components
+ - Semua attribute HTML yang tidak didefinisikan di constructor dari class component, akan tersedia di 'attribute bag' dari component. Dan bisa diakses melalui variabel $attributes. Semua attribute dapat dirender didalam component dengan meng-echo variabel ini.
+ contoh :
+
+    // component alert
+    <x-alert :message="$message" type="error" class="mt-4" />
+
+    // blade component
+    <div {{ $attributes }} >
+        <-- content compponent -->
+    </div>
+
+# Attributes Default / Merge
+- Ketika kita mungkin ingin menentukan nilai default, atau menggabungkan beberapa nilai ke attributes component, kita bisa gunakan method 'merge()' dari attributes bag. Method ini sangat berguna khususnya untuk menetapkan seperangkat class CSS default yang harus selalu di terapkan ke sebuah component.
+contoh :
+
+    // misalkan kita punya component blade berikut :
+    <div {{ $attributes->merge(['class' => 'alert alert-'. $type]) }} >
+        {{ $message }}
+    </div>
+
+    // Jika kita asumsikan component di gunakan sebagai berikut :
+    <x-alert type="error" :message="$messages" class="mb-4" />
+
+    // maka hasil render nya adalah sebagai berikut :
+    <div class="alert alert-error mb-4" >
+        <!--- Content dari $message ---!>
+    </div>
+
+# Merge Class secara Kondisional.
+- Ketika mungkin kita ingin menggabungkan(merge) class berdasarkan kondisi tertentu, 'true' misalnya. Kita bisa gunakan method 'class()' dari attributes bags.
+- Method ini menerima sebuah argument berupa data array, yang mana key-nya berupa list class yang ingin di merge, dan value-nya adalah expresion boolean(true/false).
+- Jika array key, berupa numeric, maka dia akan selalu disertakan ketika class di render.
+- contoh :
+
+    <div {{ $attributes->class(['p-4', 'bg-red' => $hasErrors]) }} >
+        {{ $messages }}
+    </div>
+
+- Selanjutnya, jika kita ingin me-merge(menggabungkan) attribute lain ke component, kita bisa merangkaikan method 'merge()' ke method 'class()'.
+- contoh :
+
+    <div {{ $attributes->class(['p-4', 'bg-red' => $hasErrors])->merge(['type' => 'button']) }} >
+        {{ $messages }}
+    </div>
+
+- Jika kita ingin meng-compile element HTML secara kondisional yang tidak menerima attributes 'merge', kita bisa menggunakan directive '@class'.
