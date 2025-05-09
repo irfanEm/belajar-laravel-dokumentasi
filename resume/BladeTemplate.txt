@@ -273,3 +273,81 @@ contoh :
     </div>
 
 - Jika kita ingin meng-compile element HTML secara kondisional yang tidak menerima attributes 'merge', kita bisa menggunakan directive '@class'.
+
+# Menggabungkan Attribute Non Class
+- Ketika kita melakukan penggabungan (merging) terhadap attribute yang bukan class, maka nilai yang disediakan untuk atrribute tersebut akan dipertimbangkan sebagai nilai default.
+- Dan tidak seperti attribute class, yang akan menggabungkan nilai yang ada dengan nilai yang disuntikan, attribute non-class akan mengoverwrite(menimpa) nilai yang ada dengan nilai yang disuntikan / diberikan.
+- contoh :
+
+    // misalkan kita punya blade component berikut :
+    <div {{ $attributes->merge(['type' => 'button']) }}>
+        {{ $slot }}
+    </div>
+
+    // selanjutnya kita ingin mengcustom tipe button menjadi type submit misalkan, kita bisa tentukan saat menggunakan component, contoh :
+    <x-button type="submit">
+        Submit
+    </x-button>
+
+    // maka hasil yang akan dirender :
+    <button type="submit">
+        Submit
+    </button>
+
+- Jika kita ingin attribute selain attribute class juga memiliki nilai default, yang tidak akan di overwrite ketika ada nilai yang diinject-an ke dalam attributes tersebut maka kamu bisa menggunakan method 'prepends()'.
+- contoh :
+
+    // pada contoh berikut, attribute method-controller akan selalu memiliki nilai default 'profile-controller' dan nilai tambahan yang diinject-an ke attribute tersebut akan di letakan setelah nilai defaultnya yaitu 'profile-controller'.
+    <div {{ $attributes->merge(['data-controller' => $attributes->prepends('profile-controller')]) }}>
+        {{ $slot }}
+    </div>
+
+# Menerima & Memfilter Attributes.
+- Jika kita ingin memfilter attributes, kita bisa menggunakan method 'filter()'.
+- Method ini menerima sebuah function closure, yang mana harus mengembalikan boolean 'true' jika kita ingin attributes-nya tetap dipertahankan di attributes bags / variabel $attributes.
+- contoh :
+
+    // contoh blade template
+    <div {{ $attributes->filter(fn(string $value, string $key) => $key == 'foo') }}>
+        {{ $slot }}
+    </div>
+
+    // contoh penggunaan component
+    <x-component foo="bar" class="mb-4" id="testId" />
+
+    // hasil render :
+    <div foo="bar">
+        <!-- content component --!>
+    </div>
+
+- Selain itu kita juga bisa mem-filter / mengambil attributes hanya yang memiliki awalan tertentu menggunakan method 'whereStartWith()'
+- contoh :
+
+    // contoh blade component
+    <div {{ $attributes->whereStartWith('wire:') }} >
+        {{ $slot }}
+    </div>
+
+    // contoh penggunaan component :
+    <x-component wire:model="email" wire:loading.class="opacity-50" class="mb-4" />
+
+    // hasi render :
+    <div wire:model="email" wire:loading.class="opacity-50">
+        <!-- content component --!>
+    </div>
+
+- Selanjutnya kita juga bisa mengecualikan attributes tertentu agar tidak disertakan, menggunakan method 'whereDoesntStartWith()'.
+- contoh :
+
+    // contoh blade component
+    <div {{ $attributes->whereDoesntStartWith('wire:') }} >
+        {{ $slot }}
+    </div>
+
+    // contoh penggunaan component :
+    <x-component wire:model="email" wire:loading.class="opacity-50" class="mb-4" />
+
+    // hasi render :
+    <div class="mb-4">
+        <!-- content component --!>
+    </div>
