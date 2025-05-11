@@ -407,3 +407,31 @@ contoh :
 
     {{ $attributes->except(['class']) }}
     // akan mengambil semua attributes kecuali attributes 'class'
+
+# Keyword yang dicadangkan (Reserved Keyword).
+- Terdapat beberapa keyword yang dicadangkan / tidak bisa kita gunakan untuk mendefinisikan properti public / nama method didalam component,karena keyword tersebut digunakan untuk penggunaan internal didalam blade.
+- Berikut beberapa keyword yang dicadangkan / tidak bisa digunakan :
+
+    - resolveView
+    - view
+    - shouldRender
+    - render
+    - withName
+    - withAttributes
+    - data
+
+# Slots
+- Slot digunakan untuk memberikan content tambahan ke component.
+- Untuk merender slot, bisa dilakukan dengan meng-echokan $slot.
+- contoh :
+
+    <div class='alert alert-danger'>
+        {{ $slot }}
+    </div>
+
+- Untuk memberikan data ke slot, kita bisa lakukan dengan menyuntikan content di dalam component.
+- contoh :
+
+    <x-alert>
+        <strong>Bahaya !</strong> ini adalah peringatan bahaya.
+    </x-alert>
