@@ -351,3 +351,59 @@ contoh :
     <div class="mb-4">
         <!-- content component --!>
     </div>
+
+- dengan method 'first()' kita bisa mengambil attributes pertama yang ada didalam attributes bag yang ada.
+- contoh :
+
+    // contoh blade component
+    <div {{ $attributes->whereStartWith('wire:')->first() }} >
+        {{ $slot }}
+    </div>
+
+    // contoh penggunaan component :
+    <x-component wire:model="email" wire:loading.class="opacity-50" class="mb-4" />
+
+    // hasi render :
+    <div wire:model="email">
+        <!-- content component --!>
+    </div>
+
+- selain itu kita juga bisa memeriksa apakah suatu attribute itu ada dalam sebuah component / tidak, yaitu dengan menggunakan method 'has()'.
+- Method ini menerima sebuah argument berupa nama attribute, yang merupakan satu2nya argument-nya.
+- method ini mengembalikan nilai boolean (true/false) yang akan mengindikasikan ada /tidaknya attribute dalam component tersebut.
+- contoh :
+
+    @if($attributes->has('class'))
+        <div>Class attribute ada.</div>
+    @endIf
+
+- kemudian ketika method 'has()' diberikan argument berupa data array, yang berisi beberapa nama attributes, maka dia akan memeriksa apakah setiap nama attributes yang ada dalam array tersebut, ada didalam component.
+- contoh :
+
+    @if($attributes->has(['class', 'id']))
+        <div>Semua attributes ada dalam component.</div>
+    @endIf
+
+- jika kita ingin memeriksa apakah salah satu dari attributes yang diberikan itu ada didalam component, kita bisa menggunakan method 'hasAny()'.
+- contoh :
+
+    @if($attributes->hasAny(['class', 'id', 'name']))
+        <div>Salah satu attribute, ada dalam component.</div>
+    @endIf
+
+- lalu jika kita ingin mengambil nilai attribute tertentu, kita bisa menggunakan method 'get()'.
+- contoh :
+
+    {{ $attributes->get('class') }}
+
+- method 'only()' bisa digunakan untuk mengambil attributes tertentu yang sesuai dengan key yang diberikan.
+- contoh :
+
+    {{ $attributes->only('class') }}
+    // akan mengambil attributes dengan key / nama class
+
+- terakhir jika kita ingin mengambil semua attributes dalam component, kecuali attributes tertentu, kita bisa menggunakan method 'except()'.
+- contoh :
+
+    {{ $attributes->except(['class']) }}
+    // akan mengambil semua attributes kecuali attributes 'class'
