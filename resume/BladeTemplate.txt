@@ -435,3 +435,68 @@ contoh :
     <x-alert>
         <strong>Bahaya !</strong> ini adalah peringatan bahaya.
     </x-alert>
+
+- Terkadang juga sebuah component harus merender beberapa slots yang berbeda di lokasi yang berbeda didalam component.
+- contoh :
+
+    <span class="alert-title">{{ $title }}</span>
+
+    <div class="alert alert-dangert">
+        {{ $slot }}
+    </div>
+
+- kita bisa mendefinisikan konten dari slot yang memiliki nama (dalam contoh diatas adalah $title) menggunakan tag 'x-slot'.
+- Setiap content yang tidak berada didalam tag 'x-slot' secara explisit, akan dimasukan ke dalam variabel $slot.
+- dari blade component diatas, maka kita bisa menggunakan componentnya sbb :
+
+    <x-alert>
+        <x-slot:title>
+            Server Error
+        </x-slot>
+
+        <strong>Error !</strong> terjadi kesalahan.
+    </x-alert>
+
+- Selanjutnya kita juga bisa memeriksa apakah suatu slot itu berisi content / tidak menggunakan method 'isEmpty()'.
+- contoh :
+
+    <span class="alert-title">{{ $title }}</span>
+
+    <div class="alert alert-dangert">
+        @if (isEmpty($slot))
+            Ini adalah content default.
+        @else
+            {{ $slot }}
+        @endIf
+    </div>
+
+- sebagai tambahan, kita juga bisa menggunakan method 'hasActualContent()' untuk menentukan apakah sebuah slot itu berisi konten actual, artinya content-nya bukan berupa sebuah comment HTML.
+- contoh :
+
+     <span class="alert-title">{{ $title }}</span>
+
+    <div class="alert alert-dangert">
+        @if (isEmpty($slot))
+            @if($slot->hasActualContent())
+                Konten ini tidak mengandung comment HTML.
+            @endIf
+            Ini adalah content default.
+        @else
+            {{ $slot }}
+        @endIf
+    </div>
+
+# Scoped Slot
+- Kita bisa mengakses properti dan atau method dari component didalam slot.
+- Dengan syarat properti atau method dari component tersebut harus didefinisikan secara public.
+- Selanjutnya kita bisa mengakses properti / method dari component melalui variabel '$component'.
+- contoh :
+
+    // misalkan component Alert disini memiliki method public formatAlert().
+    <x-alert>
+        <x-slot:title>
+            {{ $component->formatAlert('Server Error') }}
+        </x-slot>
+
+            <strong>Error !</strong> terjadi kesalahan.
+    </x-alert>
