@@ -553,3 +553,46 @@ contoh :
 - contoh :
 
     <x-dynamic-component :component="$componentName" class="mb-4"/>
+
+# Mendaftarkan Component Secara Manual.
+- Umumnya semua component yang kita buat akan berada di direktori App/View/Components dan /resources/views/components.
+- Akan tapi ketika kita ingin membangun sebuah package yang memanfaatkan blade component dari laravel, atau menempatkan component di direktori non-convensional.
+- Agar laravel tau dan bisa menemukan component tersebut, kita harus mendaftarkanya secara manual, dengan cara mendaftarkan class component dan tag aliasnya.
+- Untuk mendaftarkanya kita bisa lakukan di method boot dari Service Provider dari package ktia.
+- contoh :
+
+    public function boot(): void
+    {
+        Blade::component('custom-alert', CustomAlert::class);
+    }
+
+- setelah component kita telah di daftarkan, kita bisa mengakses / menggunakan component tersebut dengan :
+
+    <x-custom-alert />
+
+- terkadang pula package component yang kita buat itu berisi lebih dari 1 component, karena itu kita bisa menggunakan method 'componentNamepace' untuk mendaftarkan / load class component secara convensional.
+- misalkan kita memiliki package CustomAlert yang memiliki component AlertDanger dan AlertInfo, kita bisa mendaftarkanya dengan cara berikut.
+- contoh :
+
+    public function boot(): void
+    {
+        Blade::componentNamepace('CustomAlert\\Views\\Components', 'customAlert');
+    }
+
+- karena kita telah mendaftarkanya kita bisa mengakses component dari package CustomeAlert sbb :
+
+    <x-custom-alert:alert-danger />
+    <x-custom-alert:alert-info />
+
+# Anonymous Component
+- Anonymous component itu mirip dengan inline component views, dia memiliki mekasnisme untuk mengatur component dengan satu file tunggal.
+- Bedanya, anonymous component menggunakan satu file view dan tidak terkait dengan class component.
+- Untuk mendefinisikan anonymous component, kita hanya perlu menempatkan blade component kita di direktori 'resources/views/components'.
+- Sebagai contoh, misalkan kita punya anonymous component sbb : 'resources/views/components/alert.blade.php', kita bisa menggunakan / memanggil component dengan cara :
+
+    <x-alert />
+
+- Selanjutnya jika component berada di dalam subfolder misal 'resources/views/components/alerts/error.blade.php', maka kita bisa gunakan tanda titik (.) untuk mengindikasikanya.
+- contoh :
+
+    <x-alets.error />
