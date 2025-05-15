@@ -500,3 +500,56 @@ contoh :
 
             <strong>Error !</strong> terjadi kesalahan.
     </x-alert>
+
+# Attributes Slot
+- Seperti juga blade component, kita juga bisa memberikan attribute tambahan ke dalam slot, contoh nama class CSS.
+- contoh :
+
+    <x-alert>
+        <x-slot:title class="mb-3 border">
+            {{ $component->formatAlert('Server Error') }}
+        </x-slot>
+
+            <strong>Error !</strong> terjadi kesalahan.
+    </x-alert>
+
+- Untuk berinteraksi dengan attributes slot, bisa dilakukan dengan menggunakan properti attributes dari nama variabel slot.
+- contoh :
+
+    <div {{ $attributes->class(['border']) }}>
+        <h3 {{ $heading->attributes->class(['fw-bold']) }}>
+            {{ $heading }}
+        </h3>
+
+        {{ $slot }}
+
+        <footer->attributes->class(['text-secondary'])>
+            {{ $footer }}
+        </footer>
+    </div>
+
+# Inline Component View
+- Ketika sebuah component itu sangat kecil, tentu kurang praktis ketika kita harus mengatur class dan blade component. Untuk alasan ini, kita bisa langsung me-return kode html langsung dari blade component di method render dari class component.
+- contoh :
+
+    public function render()
+    {
+        return <<< 'blade'
+            <div class="alert alert-danger">
+                {{ $slot }}
+            </div>
+        blade;
+    }
+
+# Generate Inline View Component
+- Untuk membuat inline view di component, kita bisa menambahkan option '--inline' pada saat menjalankan perintah artisan 'php artisan make:component.
+- contoh :
+
+    php artisan make:component Alert --inline
+
+# Dynamic Component.
+- Terkadang mungkin kita harus me-render sebuah component, akan tetapi kita tidak tahu component mana yang harus dirender, sampai saatnya runtime.
+- Untuk mengatasi ini kita bisa menggunakan 'dynamic-component' dari component bawaan laravel untuk melakukan render, berdasarkan nilai / variabel yang diberikan.
+- contoh :
+
+    <x-dynamic-component :component="$componentName" class="mb-4"/>
