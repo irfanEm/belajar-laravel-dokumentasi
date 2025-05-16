@@ -596,3 +596,34 @@ contoh :
 - contoh :
 
     <x-alets.error />
+
+# Index Anonymous components
+- Terkadang suatu component itu terbuat dari beberapa template blade.
+- Dan mungkin terkadang kita ingin mengelompokan template2 tersebut didalam sebuah direktori / folder.
+- Contoh kita memiliki component accordion dengan struktur direktori berikut :
+
+    /resources/views/components/accordion.blade.php
+    /resources/views/components/accordion/item.blade.php
+
+- dari struktur direktori component accordion diatas, kita bisa me-render component menggunakan <x-accordion /> dengan cara berikut :
+
+    <x-accordion>
+        <x-accordion.item>
+            {{ $slot }}
+        </x-accordion.item>
+    </x-accordion>
+
+- Tapi dalam render component accordion menggunakan <x-accordion /> kita akan dipaksa untuk menempatkan file index dari template component kita(accordion.blade.php) di direktori component (resources/views/components), bukan di direktori accordion(/resources/views/components/accordion).
+- Untungnya Blade memungkinkan kita untuk menempatkan file yang namanya sesuai dengan nama direktori dari component didalam direktori component itu sendiri.
+- Sehingga ketika file ini (file yang namanya sesuai dengan nama direktori component) itu ada, dia akan dijadikan sebagai element root dari component tersebut.
+- contoh :
+
+    /resources/views/components/accordion/accordion.blade.php
+    /resources/views/components/accordion/item.blade.php
+
+- Dengan struktur direktori diatas, kita tetap bisa me render component melalui <x-accordion /> sama seperti sebelumnya.
+
+# Properties & Attributes Data Anonymous components
+- Karena anonymous component tidak memiliki class apapun yang terkait, mungkin kita akan bingung bagaimana cara kita membedakan data mana yang diberikan ke component sebagai variabel dan attribut mana yang harus ditempatkan di component bags.
+- Untuk menangani hal ini, kita bisa menggunakan directives '@props([])' untuk menentukan data yang akan dipertimbangkan sebagai variabel, dibagian atas dari template blade component.
+- Semua attribute lain (selain data yang ada di props) akan disimpan di attributes bags.
