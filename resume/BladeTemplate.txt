@@ -627,3 +627,112 @@ contoh :
 - Karena anonymous component tidak memiliki class apapun yang terkait, mungkin kita akan bingung bagaimana cara kita membedakan data mana yang diberikan ke component sebagai variabel dan attribut mana yang harus ditempatkan di component bags.
 - Untuk menangani hal ini, kita bisa menggunakan directives '@props([])' untuk menentukan data yang akan dipertimbangkan sebagai variabel, dibagian atas dari template blade component.
 - Semua attribute lain (selain data yang ada di props) akan disimpan di attributes bags.
+- Selain itu jika kita ingin memberikan nilai default untuk variabel, kita bisa melakukanya dengan menjadikan nama variabel sebagai array key, dan nilai dari variabel sebagai array value.
+- contoh :
+
+    @props(['type'=>'info', 'message']);
+
+    <div {{ $attributes->merge(['class' => 'alert alert-' . $type]) }}>
+        {{ $message }}
+    </div>
+
+- selanjutnya kita bisa menggunakan / memanggil component sebagai berikut :
+
+    <x-alert type="success" :message="Berhasil menambahkan data." class="mb-4" />
+
+# Mengakses data Component Induk di component Anak (child)
+- Ketika mungkin component kita nantinya sangat komplek, yang terdiri dari component parent (induk) dan child (anak), kita mungkin ingin mengakses data dari component induk didalam component anak.
+- contoh :
+
+    // misalkan kita punya component menu yang terdiri dari <x-menu> dan <x-menu.item > seperti ini :
+    <x-menu color="blue">
+        <x-menu.item>...</x-menu.item>
+        <x-menu.item>...</x-menu.item>
+    </x-menu>
+
+    // selanjutnya untuk impelementasi dari component induk (<x-menu>) misal seperti ini :
+    @props(['color' => 'red']);
+
+    <ul {{ $attributes->merge(['class'=>'bg-' . $color . '-200']) }}>
+        {{ $slot }}
+    </ul>
+
+- karena data props color hanya didefinisikan di component induk (parent), maka data ini tidak akan bisa diakses di component anak (child).
+- tapi jika kita mendefinisikan menggunakan directive '@aware([])' maka data color akan bisa diakses di component anak (child).
+
+# Path Anonymous Component
+- Seperti yang telah dijelaskan sebelumnya, bahwa untuk membuat anonymous component, kita hanya perlu membuat template blade di direktori 'resources/views/components/'.
+- Tapi bisa jadi kita ingin mendaftarkan path direktori component lain, ke dalam aplikasi laravel kita sebagai tambahan.
+- Untuk melakukan hal ini, kita bisa menggunakan method 'anonymousComponentPath()'.
+- method anonymousComponentPath menerima argument pertama sebagai lokasi dari component.
+- method ini biasanya di didefinisikan di dalam method 'boot()' dari salah satu Service Provider aplikasi laravel kita.
+- contoh :
+
+    public function boot(): void
+    {
+        Blade::anonymousComponentPath(__DIR__ . '/../components');
+    }
+
+- Setelah method sudah di definisikan, dan misalkan kita memiliki component di direktori kita dengan nama 'panel.blade.php', maka kita bisa merender component tersebut sbb:
+
+    <x-panel />
+
+- Selanjutnya method ini juga menerima argument ke 2 yang bersifat opsional.
+- Argument ke 2 dari method ini bisa kita isi dengan namespace yang nantinya akan menjadi prefix untuk component yang bersangkutan.
+- contoh :
+
+    // misalkan kita memberikan argument ke 2 ini nilai : 'dashboard'
+    public function boot(): void
+    {
+        Blade::anonymousComponentPath(__DIR__ . '/../components', 'dashboard');
+    }
+
+- Maka jika kita memiliki file dengan nama yang sama seperti sebelumnya, kita bisa merender component tersebut dengan :
+
+    <x-dashboard::panel />
+
+# Membangun Layouts
+# Mendefinisikan layouts menggunakan component.
+- Hampir semua web-app itu menggunakan layout umum yang sama di semua halaman aplikasinya.
+- Ini akan sangat merepotkan jika kita terus mengulang mendefinisikan layout yang sama di seluruh halaman dari aplikasi / disetiap view yang kita buat.
+- Untungnya kita bisa mendefinisikan layout ini sebagai blade component tunggal, dan selanjutnya kita bisa menggunakanya di seluruh aplikasi.
+- Sebagai contoh misalkan kita sedang membangun sebuah aplikasi todolist, mungkin layouts dari aplikiasi kita akan terlihat sbb :
+
+    <!-- resources/views/components/layout.blade.php -->
+    <html>
+        <head>
+            <title>{{ $title ?? 'Todo App Web' }}</title>
+        </head>
+
+        <body>
+            <h1>Todo : </h1>
+            </hr>
+            {{ $slot }}
+        </body>
+    </html>
+
+- Setelah kita mendefinisikan layout seperti diatas, selanjutnya kita bisa menggunakan layout tersebut.
+- Misalkan kita ingin menampilkan list dari todo kita, menggunakan view task kita, seperti ini :
+
+    <x-layout>
+        @foreach($tasks as $task)
+            <div>{{ $task }}</div>
+        @endforeach
+    </x-layout>
+
+- Yang perlu kita ingat adalah, bahwa setiap konten yang kita inject(suntikan) didalam component, akan disediakan sebagai variabel $slot default.
+- Tapi jika kita perhatikan ulang, kita tahu bahwa di dalam component layout terdapat slot $title yang mana akan disediakan jika diberi nilai, dan akan menampilkan nilai default jika tidak diberi nilai.
+- Jika kita ingin memberikan nilai ke variabel slot $title dari view task kita, kita bisa menggunakan syntax slot seperti yang sudah pernah dibahas di bab sebelumnya.
+- contoh :
+
+    <x-layout>
+
+        <x-slot:title>
+            Custom Judul
+        </x-slot>
+
+        @foreach($tasks as $task)
+            <div>{{ $task }}</div>
+        @endforeach
+
+    </x-layout>
