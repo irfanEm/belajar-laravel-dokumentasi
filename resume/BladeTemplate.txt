@@ -795,3 +795,17 @@ contoh :
 
     // pada contoh berikut 'Judul Halaman' akan dirender jika section title tidak didefinisikan.
     @yield('title', 'Judul Halaman')
+
+# Forms
+#CSRF Field
+- Setiap kita membuat form HTML di dalam aplikasi laravel kita, kita harus menyertakan sebuah field hidden untuk token CSRF.
+- Dengan adanya field tersebut middleware perlindungan CSRF di aplikasi laravel kita bisa memvalidasi request yang masuk.
+- Kita bisa menggunakan directive blade @csrf untuk menghasilkan field CSRF.
+- contoh :
+
+    <form method="POST" action:"/user/profile">
+        @csrf
+
+        ...
+
+    </form>
