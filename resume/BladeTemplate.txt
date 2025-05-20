@@ -736,3 +736,62 @@ contoh :
         @endforeach
 
     </x-layout>
+
+# Layout Menggunakan Pewarisan Template.
+# Mendefinisikan Layout
+- Sebelum mengenal component pembuatan layout menggunakan pewarisan template (template inheritence) adalah jalan utama dalam pembangunan aplikasi web.
+- Untuk memulai membangun layout menggunakan pewarisan template kita akan menggunakan sebuah contoh sederhana.
+- contoh layout template (parent):
+
+    <!-- resources/views/layouts/app.blade.php -->
+    <html>
+        <head>
+            <title>Nama App - @yield('title')</title>
+        </head>
+        <body>
+            @section('sidebar')
+                <p>Bagian ini sidebar utama</p>
+            @show
+
+            <div class="container">
+                @yield('content')
+            </div>
+        </body>
+    </html>
+
+- Jika diperhatikan layout diatas terdapat directive @yield() dan @section.
+- Directive @section digunakan untuk mendefinisikan bagian(section) dari konten.
+- Sedangkan @yield digunakan untuk menampilkan konten dari section yang ditentukan / diberikan.
+
+# Meng-Extends Layouts.
+- Untuk menggunakan layout yang telah kita buat, kita harus mendefinisikan directive @extends() di view child (anak) dan menentukan layout induk(parent) yang ingin kita gunakan / warisi.
+- View yang sudah meng-extends blade layout dapat menyuntikan konten ke dalam layout yang di extends dengan menggunakan directive @section().
+- Dan perlu diingat bahwa, seperti contoh diatas, content dari section akan ditampilkan menggunakan directive @yield yang berada di view layout.
+- contoh extends view :
+
+    <!-- resources/views/child.blade.php -->
+    @extends('layouts.app')
+
+    @section('title', 'Judul Halaman')
+
+    @section('sidebar')
+
+        @@parent
+
+        <p>Bagian ini akan ditambahkan ke sidebar utama.</p>
+
+    @endsection
+
+    @section('content')
+        <p class="">Ini adalah bagian dari content.</p>
+    @endsection
+
+- Pada contoh diatas, dibagian sidebar, kita menggunakan directive @@parent untuk menambahkan (alih alih menimpa) content dari sidebar di layout.
+- Directive @@parent akan digantikan oleh konten yang ada di layout ketika view ini di render.
+- Jika kita perhatikan, berbeda dengan sidebar di layout, sidebar di child view menggunakan directive @endsection, sedangkan di parent view menggunakan @show.
+- Perbedaanya adalah @endsection hanya akan mendefinisikan bagian dari content, sedangkan @show akan mendefinisikan dan segera menghasilkan bagian dari kontent.
+- Directive @yield juga menerima parameter ke2 sebagai nilai default, dimana parameter ini akan di render ketika section (bagian) yang di-yield-kan itu undefined(tidak ditemukan).
+- contoh :
+
+    // pada contoh berikut 'Judul Halaman' akan dirender jika section title tidak didefinisikan.
+    @yield('title', 'Judul Halaman')
