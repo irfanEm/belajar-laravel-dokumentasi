@@ -797,7 +797,7 @@ contoh :
     @yield('title', 'Judul Halaman')
 
 # Forms
-#CSRF Field
+# CSRF Field
 - Setiap kita membuat form HTML di dalam aplikasi laravel kita, kita harus menyertakan sebuah field hidden untuk token CSRF.
 - Dengan adanya field tersebut middleware perlindungan CSRF di aplikasi laravel kita bisa memvalidasi request yang masuk.
 - Kita bisa menggunakan directive blade @csrf untuk menghasilkan field CSRF.
@@ -809,3 +809,55 @@ contoh :
         ...
 
     </form>
+
+# Field Method
+- Karena form HTML tidak dapat membuat request PUT, DELETE, atau PATCH, maka kita bisa gunakan field hidden (tersembunyi) _method() untuk memalsukan HTTP verbs ini.
+- Untuk membuatnya kita bisa menggunakan directive blade @method.
+- contoh :
+
+    <form method="POST" action:"/user/profile">
+    @method('PUT')
+
+        ...
+
+    </form>
+
+# Kesalahan (Errors) Validasi
+- Directive @error dapat kita gunakan untuk memeriksa secara cepat, jikalau ada pesan error validasi untuk attribute yang ditentukan.
+- Selain itu kita juga bisa menampilkan pesan error didalam directive @error dengan meng-echo variabel $message.
+- contoh :
+
+    <input
+        id="title"
+        type="text"
+        class="@error('title') is-invalid @enderror"
+    />
+
+    // menampilkan pesan error dengan meng-echo variabel $message
+    @error('title')
+        <div class="alert alert-danger" >{{$message}}</div>
+    @enderror
+
+- Karena directive @error ini mengcompile ke sebuah statement 'if', maka kita bisa menambahkan directive @else ditengah tengahnya, ketika kita ingin merender sesuatu saat tidak ditemukan error dalam form untuk suatu attribute.
+- contoh :
+
+    <input
+        id="title"
+        type="text"
+        class="@error('title') is-invalid @else is-valid @enderror"
+    />
+
+- Directive @error juga menerima parameter kedua yang bisa kita isikan dengan nama spesific dari error bag, jika kita ingin mengambil pesan error dari halaman yang berisi beberapa form / banyak form.
+- contoh :
+
+    // contoh dibawah, menambahkan parameter berupa error bag bernama 'login'
+    <input
+        id="title"
+        type="text"
+        class="@error('title', 'login') is-invalid @enderror"
+    />
+
+    // menampilkan pesan error dengan meng-echo variabel $message
+    @error('title', 'login')
+        <div class="alert alert-danger" >{{$message}}</div>
+    @enderror
