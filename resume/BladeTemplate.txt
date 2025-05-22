@@ -861,3 +861,60 @@ contoh :
     @error('title', 'login')
         <div class="alert alert-danger" >{{$message}}</div>
     @enderror
+
+# Stacks
+- Blade memungkinkan kita untuk melakukan push (mendorong) stack bernama ke lokasi lain dari view atau layout lainya.
+- Hal ini sangat berguna ketika kita ingin menspesifikan library JS / CSS untuk view child.
+- contoh :
+
+    // misalkan kita punya layout berikut :
+    <html>
+        <head>
+            <title>My Web</title>
+            @stack('script')
+        </head>
+
+        <body>
+            @yield('content')
+        </body>
+    </html>
+
+    // Selanjutnya didalam view child kita bisa melakukan push ke @stack('script'), seperti berikut :
+
+    @extends('layouts.app.')
+
+    @section('content')
+        <p>Hello World</p>
+    @endsection
+
+    @push('script')
+        <script>console.log('ini adalah script yang di push dari stack bernama.')</script>
+    @endpush
+
+- Selain itu jika kita ingin melakukan push ketika nilai boolean bernilai true, kita bisa menggunakan @pushIf.
+- contoh :
+
+    // jika nilai dari variabel $condition bernilai true, maka script akan dipush.
+    @pushIf($condition, 'script')
+        <script>console.log('ini adalah script yang di push dari stack bernama.')</script>
+    @endpush
+
+- Seperti contoh diawal untuk me-render stack yang sudah di push kita bisa menggunakan directive @stack('namaStack').
+- contoh :
+
+    <head>
+        ...
+
+        @stact('script')
+    </head>
+
+- Selanjutnya jika kita ingin stack yang kita push berada di posisi paling awal / pertama, kita bisa gunakan directive @prepend('namaStack').
+- contoh :
+
+    @push('stack1')
+        <script>console.log("ini akan berada setelah prepend.")</script>
+    @endpush
+
+    @prepend('stack')
+        <script>console.log("ini akan berada di paling awal.")</script>
+    @endprepend
