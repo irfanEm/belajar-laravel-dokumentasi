@@ -918,3 +918,48 @@ contoh :
     @prepend('stack')
         <script>console.log("ini akan berada di paling awal.")</script>
     @endprepend
+
+# Service Injection
+- Ketika kita ingin mengambil sebuah service dari service container laravel di dalam blade, kita bisa menggunakan directive blade @inject().
+- Argument pertama dari directive @inject adalah nama variabel yang menjadi tempat disimpanya service yang ingin kita ambil, sedangkan argument ke 2 adalah nama interface / class yang ingin kita ambil (resolve).
+- contoh :
+
+    // misalkan kita ingin mengambil class Userservice dan menyimpanya di variabel $user. kita bisa melakukanya dengan :
+    @inject('users', 'App\Model\User')
+
+    @foreach($users as $user)
+        {{ $user }}
+    @endforeach
+
+# Merender Template Blade Inline.
+- Terkadang kita mungkin harus merender string dari template blade mentah kita (mentah = belum diconvert menjadi kode HTML) menjadi kode HTML yang valid.
+- Untuk melakukanya kita bisa memanfaatkan method render() dari facade Blade.
+- Method ini menerima 2 parameter, parameter pertama adalah string dari template blade, sedangkan parameter ke2 adalah data array yang disediakan untuk template blade dan ini bersifat opsional.
+- contoh :
+
+    Blade::render ('Hai {{ $nama }}', ['nama' => 'Dunia']);
+
+- Laravel merender template blade inline dengan cara menuliskanya di direktori / folder 'storage/framework/views'.
+- Selanjutnya jika kita ingin menghapus temporary file setelah kita melakukan rendering inline blade template, kita bisa menambahkan argument 'deleteCachedView' dengan value 'true' ke method render, sebagai argument ke 3.
+- contoh :
+
+    Blade::render ('Hai {{ $nama }}', ['nama' => 'Dunia'], deleteCachedView: true);
+
+# Render Fragment Blade.
+- Saat menggunakan framework frontend seperti htmx atau Turbo, terkadang kita harus me-return hanya bagian tertentu dari blade template di HTTP Response.
+- Untuk melakukan ini, kita bisa menggunakan directive blade @fragment.
+- Caranya kita hanya perlu menempatkan bagian dari blade template yang akan kita return diantara directive @fragment dan @endfragment.
+- contoh :
+
+    @fragment('user-list')
+        <ul>
+            @foreach($users as $user)
+                <li>{{ $user }}</li>
+            @endforeach
+        </ul>
+    @endfragment
+
+- Selanjutnya ketika kita ingin merender view yang memanfaatkan template ini, kita harus memanggil method 'fragment()' untuk menentukan bahwa hanya fragment yang sudah ditentukan saja yang boleh disertakan keluar bersama HTTP Response.
+- contoh :
+
+    return response()->view('dashboard', ['users' => $user])->fragment('user-list');
