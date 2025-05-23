@@ -963,3 +963,19 @@ contoh :
 - contoh :
 
     return response()->view('dashboard', ['users' => $user])->fragment('user-list');
+
+- Jika kita ingin me return fragment dari view berdasarkan kondisi tertentu, kita bisa menggunakan directive fragmentIf(). Jika kondisi yang diberikan tidak terpenuhi, maka seluruh view akan di return.
+- contoh :
+
+    return response()->view('dashboard',['users' => $users])->fragmentIf($request->hasHeader('HX-Request'), 'user-list');
+
+- Dengan method fragment() dan fragmentIf() kita juga bisa me-return multiple fragment di response. contoh :
+
+    view('dashboard', ['users' => $users])
+    ->fragments(['user-list', 'comment-list']);
+
+    view('dashboard', ['users' => $users])
+        ->fragmentsIf(
+            $request->hasHeader('HX-Request'),
+            ['user-list', 'comment-list']
+        );
