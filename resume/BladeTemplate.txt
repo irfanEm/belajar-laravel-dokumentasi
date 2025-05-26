@@ -979,3 +979,82 @@ contoh :
             $request->hasHeader('HX-Request'),
             ['user-list', 'comment-list']
         );
+
+# Extending Blade
+- dengan Blade kita bisa membuat custom directive milik kita sendiri.
+- Cara kerjanya adalah, ketika compiler Blade bertemu dengan custom directive kita, dia akan memanggil callback yang disediakan beserta dengan expression yang terkandung didalam directive tersebut.
+- Sebagai contoh, contoh berikut membuat directive @datetime($var) yang mana akan memformat variabel $var yang diberikan dan harusnya menjadi instance dari DateTime.
+
+    class AppServiceProvider extends ServiceProvider
+    {
+        public function register(): void
+        {
+            ...
+        }
+
+        public function boot(): void
+        {
+            Blade::directive('datetime', function(string $expression){
+                return "<?php echo ($expresion)->format('m/d/Y H:i'); ?>";
+            });
+        }
+    }
+
+- Pada contoh diatas, kita merangkaikan method format ke expresion apapun yang diberikan ke directive.
+- Sehingga final PHP yang dihasilkan akan menjadi :
+
+    <?php echo ($var)->format("m/d/Y H:i") ?>
+
+- note :
+    - setelah kita memperbarui logic dari directive blade, kita harus menghapus semua blade view yang di cache.
+    - Untuk melakukanya kita bisa gunakan perintah artisan 'view:clear'
+
+# Mengcustom Echo Handler.
+- Saat kita mencoba meng-echo sebuah object menggunakan blade, sebuah method bernama __toString() akan dipanggil.
+- Method __toString() adalah salah satu 'magic method' bawaan PHP.
+- Tapi terkadang kita tidak memiliki kendali atas method '__toString()' dari object yang diberikan, seperti contoh mungkin object yang sedang berinteraksi dengan kita berasal dari partisi pihak ke 3.
+- Pada kasus seperti ini, Blade memungkinkan kita untuk mendaftarkan custom echo handler kita sendiri untuk jenis object tertentu.
+- Untuk melakukanya kita bisa memanggil method 'stringable()' milik Blade. method ini menerima sebuah closure.
+- Di dalam closure tersebut kita harus mengetikan tipe object yang bertugas melakukan rendering.
+- dan Terakhir method stringable ini biasanya didefinisikan di method boot dari AppServiceProvider aplikasi laravel kita.
+- contoh :
+
+    use Illuminate\Support\Facades\Blade;
+    use Money\Money;
+
+    public function boot(): void
+    {
+        Blade::stringable(function (Money $money) {
+            return $money->formatTo('en_GB');
+        });
+    }
+
+- Setelah kita sudah mendefinisikan custom echo handler kita sendiri, kita bisa menggunakanya sesimpel echo object di blade template.
+- contoh :
+
+    Cost : {{ $money }}
+
+# Custom Statement if
+- Blade juga menyediakan method Blade::if() yang bisa kita gunakan untuk membuat custom directive pengkondisian.
+- Method ini menerima nama directive sebagai perameter pertama, dan closure pada parameter kedua.
+- function closure menerima argument yang diterima oleh directive.
+- contoh :
+
+    Blade::if('disks', function(string $value){
+        return config('filesystems.default') === $value;
+    });
+
+- Setelah kita mendefinisikan custom directive pengkondisian kita, kita bisa menggunakanya.
+- contoh  :
+
+    @disks('local')
+
+    @elsedisks('s3')
+
+    @else
+
+    @enddisks
+
+    @unlessdiks('local')
+
+    @enddisks
