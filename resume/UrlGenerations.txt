@@ -1,0 +1,94 @@
+Membuat URL (URL Generations).
+
+# Pengenalan
+- Laravel memiliki banyak helper untuk membuat / generate url didalam aplikasi kita.
+- Ini akan sangat berguna terutama untuk menghasilkan url untuk template dan response API.
+- Atau juga ketika kita ingin membuat url untuk bagian lain dari aplikasi kita.
+
+# DASAR
+# Menghasilkan URl.
+- Dengan method 'url()' kita bisa menghasilkan / generate sembarang url dari aplikasi kita.
+- Url yang dihasilkan akan secara otomatis menggunakan scheme (HTTP atau HTTPS) dan host sesuai dengan request terkini yang sedang ditangani aplikasi.
+- contoh :
+
+    $post = App\Model\Post::find(1);
+    echo url("/post/{$post->id}");
+    // contoh url yang dihasilkan : http://example.com/post/1
+
+- Untuk menghasilkan url dengan string query parameter, kita bisa gunakan method 'query()'. contoh :
+
+    echo url()->query('/post' => ['title' => 'laravel']);
+    // http://example.com/post?title=laravel
+
+    echo url()->query('/post?category=tutorial', ['title' => 'laravel12']);
+    // http://example.com/post?category=tutorial&title=laravel12
+
+- Saat kita menyediakan parameter query string dimethod query() yang sudah ada di URl, maka akan meng-overwrite(menimpa) query string yang ada. contoh :
+
+    echo url()->query('/post?search=laravel', ['search' => 'react']);
+    // http://example.com/post?search=react
+
+- Kita juga bisa memberikan nilai berupa array ke query parameter. Saat nilai array diberikan, dia akan secara otomatis di kunci dan di encode di URL yang dihasilkan. contoh :
+
+    echo $url = url()->query('/posts', ['title' => ['laravel', 'react']]);
+    // http://example.com/posts?title%5B0%5D=laravel&title%5B0%5D=react
+
+    echo urldecode($url);
+    // http://example.com/posts?title[0]=laravel&title[1]=react
+
+# Mengakses URL
+- Jika tidak disediakan path spesifik ketika mengakses url menggunakan helper method url(), maka sebuah object 'Illuminate\Routing\UrlGenerator' akan di return, sehingga memungkinkan kita untuk informasi tentang URl terkini.
+- contoh :
+
+    // mendapatkan url terkini tanpa string query parameter
+    echo url()->current();
+
+    // mendapatkan url terkini dengan string query parameter
+    echo url()->full();
+
+    // mendapatkan url penuh dari request sebelumnya
+    echo url()->previous();
+
+    // mendapatkan path url dari request sebelumnya
+    echo url()->previousPath();
+
+- Semua method helper diatas juga bisa diakses melalui Facade URL. contoh :
+
+    echo URL::current();
+
+# URL untuk Route Bernama.
+- Helper method 'route()' dapat digunakan untuk menghasilkan URL dari sebuah route bernama.
+- Route bernama memungkinkan kita menghasilkan URL tanpa digabungkan ke URL sebenarnya yang didefinisikan di route.
+- Sehingga ketika terjadi perubahan url di route, kita tidak perlu melakukan perubahan di pemanggilan function route() kita.
+- Sebagai contoh misalkan kita memiliki route berikut :
+
+    Route::get('post/{id}', function(){
+        ...
+    })->name('post.detail');
+
+- Maka kita bisa menghasilkan URL dari route tersebut dengan cara :
+
+    echo route('post.detail',['id' => 3]);
+    // http://example.com/post/3
+
+- Dan bahkan method route() juga bisa digunakan untuk menghasilkan URL dengan banyak parameter(multiple parameter). contoh :
+
+    Route::get('post/{id}/category/{category}', function(){
+        ...
+    })->name('post.detail.category');
+
+    // selanjutnya kita dapat mengaksesnya :
+
+    echo route('post.detail.category', ['post' => 3, 'category' => 'laravel']);
+    // http://example.com/post/3/category/laravel
+
+- Dan element array tambahan apapun yang tidak sesuai dengan definisi route akan ditambahkan Sebagai query parameter. contoh :
+
+    echo route('post.detail', ['post' => 3, 'author' => 'IrfanM']);
+    // http://example.com/post/3?author=IrfanM
+
+# Eloquent Model
+- Nantinya kita akan sering men-generate URL menggunakan route key dari Eloquent model (biasanya menggunakan primary key).
+- karena itulah kita bisa memberikan Eloquent model sebagai nilai parameter, yang nantinya secara otomatis akan diextract oleh method route() nilai route key-nya. contoh :
+
+    echo route('post.detail', ['post' => $post]);
