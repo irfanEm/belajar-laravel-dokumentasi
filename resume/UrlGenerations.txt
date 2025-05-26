@@ -92,3 +92,33 @@ Membuat URL (URL Generations).
 - karena itulah kita bisa memberikan Eloquent model sebagai nilai parameter, yang nantinya secara otomatis akan diextract oleh method route() nilai route key-nya. contoh :
 
     echo route('post.detail', ['post' => $post]);
+
+# Url yang di Tandatangani (Signed Url)
+- Laravel memungkinkan kita untuk membuat URL yang 'ditandatangani' untuk route bernama.
+- Url ini memiliki tanda tangan hash yang ditambahkan ke query string yang memungkinkan laravel untuk memverifikasi bahwa URL tidak pernah dimodifikasi sejak ia dibuat.
+- Url bertanda tangan khususnya itu sangat berguna untuk route yang bisa diakses secara public namun membutuhkan lapisan perlindungan terhadap manipulasi URL.
+- Sebagai contoh mungkin kita bisa menggunakan url bertanda tangan untuk mengimplementasikan link "unsubscripe" yang bersifat public yang kita emailkan ke customer kita.
+- Untuk membuat url bertanda tangan, kita bisa menggunakan method 'signedRoute()' dari Facade URL. contoh :
+
+    use Illuminate\Support\Facade\URL;
+
+    return URL::signedRoute('unsubscripe', ['user' => 1]);
+
+- Kita juga bisa mengecualikan domain dari url bertanda tangan hash, dengan menyediakan argument 'absolute' dengan nilai false pada method signedRoute(). contoh :
+
+    use Illuminate\Support\Facade\URL;
+
+    return URL::signedRoute('unsubscripe', ['user' => 1], absolute: false);
+
+- Ketika kita mungkin ingin membuat sebuah url bertanda tangan sementara yang mana akan kadaluarsa setelah sejumlah waktu tertentu, kita bisa menggunakan method 'temporarySignedRoute()'.
+- Nantinya ketika laravel memvalidasi url route bertanda tangan sementara ini, dia akan memastikan bahwa waktu kadaluarsa belum terlewat.
+- contoh :
+
+    use Illuminate\Support\Facade\URL;
+
+    return URL::temporarySignedRoute(
+        'unsubscripe', now()->addMinutes(30), ['user' => 1]
+    );
+
+# Memvalidasi Request Route Bertanda Tangan.
+- Untuk mem-verifikasi request yang masuk itu memiliki tanda tangan yang valid, kita bisa memanggil method 'hasValidSignature()' dari object 'Illuminate\Http\Request' yang masuk. contoh :
