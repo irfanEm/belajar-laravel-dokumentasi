@@ -122,3 +122,37 @@ Membuat URL (URL Generations).
 
 # Memvalidasi Request Route Bertanda Tangan.
 - Untuk mem-verifikasi request yang masuk itu memiliki tanda tangan yang valid, kita bisa memanggil method 'hasValidSignature()' dari object 'Illuminate\Http\Request' yang masuk. contoh :
+
+    Route::get('/unsubscribe/{user}', function(Request $request){
+        if(! $request->hasValidSignature()) {
+            abort(401);
+        }
+    })->name('unsubscribe');
+
+- Terkadang mungkin saja kita harus mengijinkan frontend aplikasi kita untuk menambahkan data ke dalam URL bertanda tangan, seperti saat kita melakukan paginasi pada sisi client.
+- Untuk bisa melakukan hal ini kita bisa menentukan query parameter request yang harus diabaikan ketika sedang melakukan validasi URL bertanda tangan, dengan menggunakan method 'hasValidSignatureWhileIgnoring()'. contoh :
+
+    Route::get('/unsubscribe/{user}', function(Request $request){
+        if(! $request->hasValidSignatureWhileIgnoring(['page', 'order'])) {
+            abort(401);
+        }
+    })->name('unsubscribe');
+
+- tapi yang perlu diingat adalah ketika kita mengabaikan sutau parameter, maka akan memungkinkan siapapun untuk memodifikasi parameter pada request.
+
+- Nah sebenarnya daripada kita melakukan validasi terhadap object request yang masuk, kita bisa menugaskan middleware 'signed' (Illuminate\Routing\Middleware\ValidateSignature) ke route-nya.
+- Middleware ini akan mengembalikan Http Response 403, jika object request yang masuk tidak memiliki tanda tangan(signature) yang valid. contoh :
+
+    Route::get('/unsubscribe/{user}', function(Request $request){
+        ...
+    })->name('unsubscribe')->middleware('signed');
+
+# Merespons Route bertanda tangan yang tidak valid.
+- Saat seseorang mengunjungi URL bertanda tangan yang sudah kadaluarsa(expired), maka sebuah halaman error umum untuk HTTP Error dengan status code 403 akan ditampilkan.
+- Kita bisa mengkustomisasi perilaku ini dengan cara mendefinisikan sebuah closure 'render' custom, untuk exception 'InvalidSignatureException' di file 'bootstrap/app.php'. contoh :
+
+    ->withExceptions(function(Exception $except){
+        $except->render(function(InvalidSignatureException $err){
+            return response()->view('errors.expired-page', status: 403);
+        });
+    });
