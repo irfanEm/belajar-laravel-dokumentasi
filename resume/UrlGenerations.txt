@@ -156,3 +156,12 @@ Membuat URL (URL Generations).
             return response()->view('errors.expired-page', status: 403);
         });
     });
+
+# URL untuk Action Controller
+- Jika kita ingin membuat URL untuk action controller (method controller), kita bisa gunakan function 'action()'. contoh :
+
+    $urlAct = action([UserController::class, 'index']);
+
+- Selanjutnya jika method yang dituju ternyata memiliki route parameter, maka kita bisa memberikan route parameter tersebut sebagai argument ke 2 dalam bentuk array assosiatif. contoh :
+
+        $urlAct = action([UserController::class, 'detail'], ['id' => 1]);
