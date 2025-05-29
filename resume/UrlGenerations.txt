@@ -165,3 +165,35 @@ Membuat URL (URL Generations).
 - Selanjutnya jika method yang dituju ternyata memiliki route parameter, maka kita bisa memberikan route parameter tersebut sebagai argument ke 2 dalam bentuk array assosiatif. contoh :
 
         $urlAct = action([UserController::class, 'detail'], ['id' => 1]);
+
+# URL Object yang Fasih.
+- Laravel memiliki class Uri yang menyediakan cara yang nyaman dan fasih untuk membuat ataupun memanipulasi URL melalui object.
+- Class ini membungkus fungsionalitas yang disediakan oleh package underlaying Url League dan terintegrasi dengan mulus dengan sistem routing laravel.
+- Untuk membuat object Uri dengan mudah kita bisa gunakan static method. contoh :
+
+    // Membuat object URI dari string yang diberikan
+    $url = Uri::of('http://example.com');
+
+    // Membuat object URI ke path
+    $url = Uri::to('/dashboard');
+
+    // Membuat object URI ke route bernama
+    $url = Uri::route('user.detail', ['user' => 1]);
+    $url = Uri::signedRoute('user.detail', ['user' => 1]);
+    $url = Uri::temporarySignedRoute('user.detail', ['user' => 1], now()->addMinutes(10));
+
+    // Membuat object URI ke action controller
+    $url = Uri::action([UserController::class, 'index']);
+    $url = Uri::action(InvokableController::class);
+
+    // Membuat object URI dari request terkini.
+    $url = $request->uri();
+
+- Setelah kita membuat object / instance URI, kita bisa memodifikasinya dengan lancar. contoh :
+
+    $url = Uri::of('example.com')
+            ->withScheme('https')
+            ->withHost('test.com')
+            ->withPath('/home')
+            ->withQuery(['page' => 3])
+            ->withFragment('section-1');
