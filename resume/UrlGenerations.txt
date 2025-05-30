@@ -197,3 +197,41 @@ Membuat URL (URL Generations).
             ->withPath('/home')
             ->withQuery(['page' => 3])
             ->withFragment('section-1');
+
+# Nilai Default Url parameter
+- Terkadang mungkin di aplikasi yang kita buat, kita memiliki parameter url yang sama dalam beberapa route yang berbeda. contoh :
+
+    Route::get('/{locale}/posts', function(Request $request){
+        ..
+    });
+
+    Route::get('/{locale}/products', function(Request $request){
+        ..
+    });
+
+- Jika kita memanggil function route() dan memberikan nilai untuk parameter locale satu persatu tentu akan merepotkan, apalagi jika routenya banyak.
+- Kita bisa menentukan nilai default untuk sebuah parameter url dengan menggunakan method URL::defaults().
+- Dimana nilai default yang diberikan akan diaplikasikan selama request yang sedang berjalan.
+- Kita bisa mendefinisikan method ini di middleware route, sehingga kita bisa mengakses request yang sedang berlangsung. contoh :
+
+    // misalkan kita sudah membuat middleware SetDefaultLocaleForUrls, kita bisa mendefinisikan method didalamnya sbb :
+
+    public function handle(Request $request, Closure $next): Response
+    {
+        $locale = $request->user()?->locale ?? 'id';
+
+        URL::defaults(['locale' => $locale]);
+
+        return $next($request);
+    }
+
+- Mengatur nilai default parameter URL dapat mengganggu penanganan dari implict model binding dari laravel.
+- Oleh karena itu kita harus memprioritaskan middleware kita(yang mengatur URL defaults) agar dieksekusi sebelum middleware SubstituteBindings milik Laravels.
+- Untuk melakukan hal ini kita bisa menggunakan method middleware 'priority()' di file bootstrap/app.php di aplikasi kita. contoh :
+
+    ->withMiddleware(function(Middleware $middleware){
+        $middleware->prependToPriorityList(
+            before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            prepend: \App\Http\Middleware\SetDefaultLocaleForUrls::class,
+        );
+    });
