@@ -1,0 +1,39 @@
+# Intro
+- Karena aplikasi yang digerakan oleh HTTP itu bersifat statelles, session menyediakan cara menyimpan informasi tentang user lintas request.
+- Informasi tentang user ini biasanya disimpan di tempat yang kuat/ database, agar nantinya bisa diakses kembali di request selanjutnya.
+- Laravel hadir dengan berbagai variasi backend session yang dapat diakses melalui API yang ekspresif dan terpadu.
+- Selain itu juga mendukung backend populer seperti Memcached, Redis dan Database yang disertakan.
+
+# Konfigurasi
+- File konfigurasi session dari aplikasi laravel yang kita buat disimpan di 'config/session.php'. dan kita harus pastikan mereview-nya untuk bisa melihat semua opsi yang tersedia untuk kita.
+- Secara default Laravel dikonfigurasikan untuk menggunakan session driver database.
+- Session driver itu apa ? session driver adalah opsi yang mendefinisikan dimana kita akan menyimpan data session pada setiap rerquest.
+- Laravel memiliki berbagai variasi session drivers :
+    - File : Session akan disimpan di file di storage/framework/sessions
+    - cookie : Session akan disimpan di cookie terenkripsi yang aman.
+    - database : Session akan disimpan di database relational.
+    - memcached / Redis : Session akan disimpan di salah satu cache berbasis penyimpanan yang cepat ini.
+    - dynamoDB : Session akan disimpan di dynamoDB AWS.
+    - array : Session akan disimpan di array PHP dan tidak akan dipertahankan (bersifat sementara).
+
+- Driver array utamanya digunakan selama masa testing dan mencegah data session disimpan untuk dipertahankan.
+
+# Prasyarat Driver
+# Database
+- Ketika kita ingin menggunakan session driver database, kita harus memastikan terlebih dahulu bahwa kita memiliki table database untuk menyimpan data session.
+- Biasanya secara default Laravel akan menyertakan ini di migrasi database 0001_01_01_00000_create_users_table.php.
+Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men-generate-nya menggunakan perintah artisan 'make:session-table'. contoh :
+
+    php artisan make:session-table
+
+    php artisan migrate
+
+# Redis
+- Sebelum kita menggunakan Redis, kita harus memastikan terlebih dahulu bahwa kita telah menginstall extensi PHP PhpRedis melalui PECL atau, package predis/predis (~1.0) melalui composer.
+- Untuk informasi lebih lanjut tentang redis, kita bisa membaca dokumentasi redis laravel.
+- Variable environment SESSION_CONNECTION atau opsi connection di file konfigurasi session.php dapat digunakan untuk menentukan koneksi redis mana yang akan digunakan untuk penyimpanan session.
+
+# Berinteraksi dengan Session.
+# Mengambil data Session.
+- Terdapat dua cara utama untuk mengambil data session, yaitu dengan menggunakan helper function 'session()' dan melalui object Request.
+- Pertama mari kita lihat yang melalui object Request, yang mana bisa kita tuliskan / ketikan di function closure Route ataupun di method controller. dan ingat bahwa laravel secara otomatis akan menyuntikan dependencies method melalui service container.

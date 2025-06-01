@@ -22,7 +22,7 @@ Sebagai contoh, misalkan data dikirim dari Route sebagai berikut :
 
 Selanjutnya untuk menampilkanya di view test.blade.php, kita bisa lakukan berikut :
 
-    {{ data }}
+    {{ $data }}
 
 Statement echo dari blade template yaitu double kurung kuraawal ({{  }}), secara otomatis akan menjalankan function 'htmlspecialchars()' untuk mencegah serangan XSS.
 Selain itu, statement echo blade template juga bisa menampilkan hasil dari function php apapun. sehingga memungkinkan kita untuk menuliskan function php apapun di dalam statement echo blade template. contoh :
