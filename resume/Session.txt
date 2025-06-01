@@ -36,4 +36,30 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
 # Berinteraksi dengan Session.
 # Mengambil data Session.
 - Terdapat dua cara utama untuk mengambil data session, yaitu dengan menggunakan helper function 'session()' dan melalui object Request.
-- Pertama mari kita lihat yang melalui object Request, yang mana bisa kita tuliskan / ketikan di function closure Route ataupun di method controller. dan ingat bahwa laravel secara otomatis akan menyuntikan dependencies method melalui service container.
+- Pertama mari kita lihat yang melalui object Request, yang mana bisa kita tuliskan / ketikan di function closure Route ataupun di method controller. dan ingat bahwa laravel secara otomatis akan menyuntikan dependencies method melalui service container. contoh :
+
+    namespace App\Http\Controllers;
+
+    use Illuminate\Http\Request;
+    use Illuminate\View\View;
+
+    class UserController extends controller
+    {
+        public function show(Request $request, string $id)
+        {
+            // mengambil data session dari object request.
+            $dataSession = $request->session()->get('key');
+
+            ...
+        }
+    }
+
+- Ketika kita mengambil data session, kita juga bisa menentukan nilai default saat menggunakan method 'get()' sebagai argument ke2.
+- Nilai default ini akan di return ketika key yang ditentukan tidak ada di session.
+- Jika kita memberikan closure function sebagai nilai defualt, maka ketika kunci yang ditentukan tidak ada, closure function ini akan dieksekusi dan hasilnya akan di return. contoh :
+
+    $dataSession = $request->session()->get('key', 'default');
+
+    $dataSession = $request->session()->get('key', function(){
+        return 'default value from closure function.';
+    });
