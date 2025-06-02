@@ -63,3 +63,56 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
     $dataSession = $request->session()->get('key', function(){
         return 'default value from closure function.';
     });
+
+# Global Helper Function session().
+- Kita juga bisa menggunakan helper function session() untuk menyimpan ataupun mendapatkan data session.
+- Ketika kita hanya memberikan satu argument berupa string ke function ini, maka dia akan mengembalikan nilai dari key(string) yang ditentukan.
+- Kita juga bisa memberikan nilai default, dengan cara memberikan argument ke dua.
+- Selanjutnya ketika kita memberikan argument berupa array assosiatif yang berisi pasangan key-value, maka dia akan menyimpan data tersebut ke dalam data session. dengan key sebagai key session dan value array sebagai value session. contoh :
+
+    // Mengambil data session dengan key tertentu
+    $dataSession = session('key');
+
+    // Mengambil data session dengan key tertentu dan dengan nilai default jika key yang dicari tidak ditemukan.
+    $dataSession = session('key', 'nilai_default');
+
+    // Menyimpan data ke session
+    session(['user_id' => '13']);
+
+- Saat menggunakan function helper session() dan menggunakan object request untuk mendapatkan data session, terdapat sedikit perbedaan praktis, tapi kedua method ini dapat ditest menggunakan method assertSessionHas() yang tersedia di semua test kita.
+
+# Mengambil semua data session
+- Untuk mengambil semua data session kita bisa menggunakan method all(). contoh :
+
+    $sessions = $request->session()->all();
+
+# Mengambil Sebagian data session.
+- Jika kita ingin mengambil sebagian data dari session, kita bisa menggunakan method only() atau except(). contoh :
+
+    // method only hanya akan mengambil data session dengan key yang ditentukan, misalnya username dan id.
+    $sessions = $request->session()->only(['username', 'id']);
+
+    // method except akan mengambil semua data session kecuali key yang ditentukan. contoh kecuali  email,
+    $sessions = $request->session()->except(['email']);
+
+# Menentukan apakah sebuah item itu ada di session.
+- Jika kita ingin memeriksa apakah suatu item itu ada / tidak di dalam session, kita bisa gunakan method has().
+- Method ini akan mengembalikan true, jika item yang ditentukan ada, dan jika tidak akan mengembalikan null. contoh :
+
+    // memeriksa apakah session punya item dengan key 'email'.
+    if($request->session()->has('email')) {
+        ...
+    }
+
+- Jika kita ingin memeriksa apakah sebuah item itu ada di dalam session, walaupun nilainya null, kita bisa gunakan method 'exists()'. contoh :
+
+    if($request->session()->exists('username')) {
+
+    }
+
+- Selanjutnya jika kita ingin memeriksa apakah suatu item itu tidak ada di session, kita bisa gunakan method missing().
+- Method ini akan mengembalikan true, jika item yang dicari tidak ada di session. contoh :
+
+    if($request->session()->missing('id')) {
+        ...
+    }
