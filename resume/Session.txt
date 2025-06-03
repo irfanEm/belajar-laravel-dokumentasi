@@ -116,3 +116,18 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
     if($request->session()->missing('id')) {
         ...
     }
+
+# Menyimpan data ke Session
+- Untuk menyimpan dara ke session kita bisa menggunakan method put() dari object  request ataupun global helper function session(). contoh :
+
+    // menggunakan method put dari object request
+    $request->session()->put(['key' => 'value']);
+
+    // menggunakan global helper function session
+    session(['key' => 'value']);
+
+# Mendorong ke dalam nilai array dari session.
+- Menggunakan method push() kita bisa mendorong nilai baru ke dalam nilai session yang berupa array.
+- Sebagai contoh, misalkan key session 'user.team' berisi data array dari nama nama divisi / team, kita bisa menambahkan nilai baru ke dalam array tersebut.  contoh :
+
+    $request->session()->push('user.item', 'web developers');
