@@ -131,3 +131,46 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
 - Sebagai contoh, misalkan key session 'user.team' berisi data array dari nama nama divisi / team, kita bisa menambahkan nilai baru ke dalam array tersebut.  contoh :
 
     $request->session()->push('user.item', 'web developers');
+
+# Mengambil dan Menghapus item dari session.
+- Dengan method pull kita bisa mengambil dan selanjutnya menghapus item dari session, hanya dengan satu statement. contoh :
+- pada contoh berikut, laravel akan mengambil data di session dengan key 'id_order' dan kemudian menghapusnya dari session, dan jika tidak ada, maka nilai default '001' akan dikembalikan.
+
+    $request->session()->pull('id_order', '001');
+
+# Meningkatkan dan Menurunkan nilai session.
+- Ketika data session kita berisi integer, mungkin kita ingin meningkatkan atau menurunkan nilainya.
+- Kita bisa gunakan method increment() dan decrement(). contoh :
+
+    // Meningkatkan nilai session dengan key 'count' 1 nilai
+    $request->session()->increment('count');
+
+    // Meningkatkan nilai session dengan key 'count' 2 nilai
+    $request->session()->increment('count', $incrementBy = 2);
+
+    // Menurunkan nilai session dengan key 'count' 1 nilai
+    $request->session()->decrement('count');
+
+    // Menurunkan nilai session dengan key 'count' 2 nilai
+    $request->session()->decrement('count', $decrementBy = 2);
+
+# Flash Data ke Session
+- Ketika kita mungkin ingin menyimpan suatu item di session untuk request selanjutnya, kita bisa menggunakan method flash().
+- Data yang disimpan menggunakan method ini akan segera tersedia pada request selanjutnya.
+- Dan setelah request selanjutnya berakhir, maka data akan dihapus.
+- Flashing data utamanya sangat berguna untuk pesan status short-lived. contoh :
+
+    $request->session()->flash('status', 'Tugas sukses !');
+
+- Jika kita harus mempertahankan semua data yang di flash untuk beberapa request, kita bisa menggunakan method reflash().
+- Atau jika kita hanya ingin mempertahankan data tertentu saja yang di flash, kita bisa menggunakan method keep().
+
+    // mempertahankan semua data yang di flash untuk beberapa request
+    $request->session()->reflash();
+
+    // mempertahankan data tertentu yang di flash untuk beberapa request
+    $request->session()->keep('username', 'password');
+
+- Jika ktia ingin mempertahankan data flash-mu hanya pada request terkini saja, kita bisa gunakan method now(). contoh :
+
+    $request->session()->now('status', 'Tugas sukses !');
