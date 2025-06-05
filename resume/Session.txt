@@ -171,6 +171,16 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
     // mempertahankan data tertentu yang di flash untuk beberapa request
     $request->session()->keep('username', 'password');
 
-- Jika ktia ingin mempertahankan data flash-mu hanya pada request terkini saja, kita bisa gunakan method now(). contoh :
+- Jika ktia ingin mempertahankan data flash hanya pada request terkini saja, kita bisa gunakan method now(). contoh :
 
     $request->session()->now('status', 'Tugas sukses !');
+
+- Selanjutnya ketika kita ingin menghapus sebagian data / item dari session, kita bisa menggunakan method forget().
+- Jika ingin menghapus semua item / data dari session kita bisa gunakan method flush(). contoh :
+
+    // menghapus item dengan key tertentu
+    $request->session()->forget('id');
+    $request->session()->forget(['id', 'email']);
+
+    // menghapus semua item / data di session
+    $request->session()->flush();
