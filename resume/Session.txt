@@ -175,6 +175,7 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
 
     $request->session()->now('status', 'Tugas sukses !');
 
+# Menghapus Data Session.
 - Selanjutnya ketika kita ingin menghapus sebagian data / item dari session, kita bisa menggunakan method forget().
 - Jika ingin menghapus semua item / data dari session kita bisa gunakan method flush(). contoh :
 
@@ -184,3 +185,7 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
 
     // menghapus semua item / data di session
     $request->session()->flush();
+
+# Regenerating ID Session.
+- Regenerate ID Session dilakukan untuk melindungi aplikasi laravel kita dari user jahat yang mencoba melakukan serangan fiksasi session ke aplikasi kita.
+- Laravel secara otomatis melakukan regenerate ID Session selama authentikasi pada aplikasi laravel yang menggunakan starter kit atau Laravel Fortify.
