@@ -189,3 +189,98 @@ Tapi jika untuk alasan tertentu kita tidak memiliki table session, kita bisa men
 # Regenerating ID Session.
 - Regenerate ID Session dilakukan untuk melindungi aplikasi laravel kita dari user jahat yang mencoba melakukan serangan fiksasi session ke aplikasi kita.
 - Laravel secara otomatis melakukan regenerate ID Session selama authentikasi pada aplikasi laravel yang menggunakan starter kit atau Laravel Fortify.
+- Jika kita ingin melakukanya secara manual, kita bisa gunakan method regenerate() dari session. contoh :
+
+    $request->session()->regenerate();
+
+- Sedangkan jika kita ingin me-regenerate session ID dan menghapus semua data di session dengan satu statement, kita bisa gunakan method invalidate(). contoh :
+
+    $request->session()->invalidate();
+
+# Mem-Block Session.
+- Agar kita bisa menggunakan fitur session blocking, aplikasi laravel kita harus menggunakan driver cache yang mendukung atomic lock.
+- Untuk saat ini, driver cache ini (yang mendukung atomic lock) itu mencakup : memcached, redis, dynamoDB, mongoDB(disertakan di package official laravel mongodb/laravel-mongodb), array, database dan file.
+- Sebagai informasi tambahan driver session cookie, tidak mensuport ini.
+- Laravel memungkinkan request dengan session yang sama berjalan bersamaan.
+- Jadi, sebagai contoh, misalkan kita menggunakan library HTTP Javascript untuk membuat 2 request berbeda yang dikirim ke aplikasi laravel kita, maka ke2 request tersebut akan dijalankan secara bersamaan.
+- Untuk kebanyakan aplikasi hal ini sebenarnya tidak menjadi sebuah masalah.
+- Tapi pada beberapa kasus tertentu, bisa terjadi kehilangan data session jika 2 request tersebut mengakses 2 endpoint yang berbeda, dan sama sama menulis data ke session pada waktu yang sama.
+- Untuk meminimalisir ini, laravel menyediakan sebuah fungsionalitas yang memungkinkan kita untuk membatasi (limit) request bersamaan untuk sebuah session / session tertentu.
+- Bagaimana caranya ? caranya adalah hanya semudah merangkaikan method block() ke definisi route kita.
+- Contoh, pada route berikut, nantinya request yang masuk dan menuju endpoint '/profile' atau '/order' akan mendapatkan session block.
+
+    Route::post('/profile', function() {
+        ...
+    })->block($lockSeconds=5, $waitSeconds=5);
+
+    Route::post('/profile', function() {
+        ...
+    })->block($lockSeconds=5, $waitSeconds=5);
+
+- Selama lock ditahan, request apapun yang menuju endpoint '/profile' atau '/order' akan menunggu hingga request pertama selesai dieksekusi, sebelum mengeksekusi request selanjutnya.
+- method block() menerima 2 argument yang bersifat opsional.
+- Argument pertama adalah waktu maximal (dalam detik) dari pengunci session(session lock) yang harus ditahan sebelum di realese (dilepaskan), dan apabila request menyelesaikan eksekusi sebelum waktu yang ditentukan, maka session lock juga akan di realese lebih cepat (dari waktu yang ditentukan).
+- Pada contoh diatas, kita menentukan session lock selama 5 detik.
+- Argument ke 2 adalah jumlah waktu yang harus ditunggu oleh request untuk mendapatkan session lock.
+- Jika request gagal mendapatkan session lock selama waktu yang ditentukan, maka sebuah object 'Illuminate\Contracts\Cache\LockTimeoutException' akan dithrown(dilemparkan).
+- Ketika 2 argument ini tidak diberikan, maka request akan mendapatkan session lock maximal 10 detik, dan juga akan mendapatkan waktu tunggu maximal 10 detik untuk mendapatkan session lock. contoh :
+
+    Route::post('/profile', function()P{
+        ...
+    })->block();
+
+# Menambahkan Session Driver Custom.
+# Mengimplementasikan Driver.
+- Jika tidak ada satupun driver session yang cocok untuk aplikasi kita, laravel memungkinkan kita untuk menulis session handler kita sendiri.
+- Session handler custom yang kita buat harus Mengimplementasikan SessionHandlerInterface bawaan(built in) PHP.
+- Interface ini memiliki hanya beberapa / sedikit method.
+- Contoh session handler MongoSessionHandler berikut :
+
+    <?php
+    namespace app\Extensions;
+
+    class MongoSessionHandler implements \SessionHandlerInterface
+    {
+        public function open($savePath, $sessionName){}
+        public function close(){}
+        public function read($sessionId){}
+        public function write($sessionId, $data){}
+        public function destroy($sessionId){}
+        public function gc($lifetime){}
+    }
+
+- Karena laravel tidak menyertakan direktori / folder default untuk menyimpan estensi kita, kita bisa bebas menyimpanya di direktori manapun yang kita inginkan.
+- contoh pada MongoSessionHandler diatas kita simpan dalam direktori Extensions yang telah kita buat.
+- Karena jika kita lihat tujuan dari method pada contoh itu susah dipahami, berikut adalah gambaran umum dari method pada contoh :
+    - method open() umumnya digunakan didalam sistem penyimpanan session berbasis file. Karena laravel hadir dengan driver sessin file, kita akan sangat jarang untuk memasukan apapun ke dalam method ini, simpelnya kita bisa membiarkan method ini kosong.
+    - method close() seperti method open() biasanya juga bisa diabaikan. untuk kebanyakan driver ini tidak dibutuhkan.
+    - method read() harus mengembalikan versi string dari data session yang terkait dengan $sessionId. Disini kita sudah tidak perlu melakukan serialisasi / encoding apapun saat menerima / menyimpan data session ke driver kita, karena laravel yang akan melakukanya.
+    - method write() harus menuliskan string dari $data yang diberikan dari $sessionId yang dikaitkan ke beberapa sistem penyimpanan yang kuat, seperti MongoDB atau sistem penyimpanan lain yang kita pilih. Dan juga kita tidak perlu melakukan serialisasi apapun, karena laravel akan melakukanya untuk kita.
+    - method destroy() harus menghapus data yang dikaitkan dengan $sessionId dari penyimpanan yang kuat/tetap (database / lainya).
+    - method gc() method ini harus menghapus semua data yang lebih lama dari $lifetime yang diberikan, yang mana berupa sebuah timestamp UNIX. untuk sistem yang memiliki self-expiring seperti memcached dan Redis, method ini akan dibiarkan kosong.
+
+# Mendaftarkan Driver
+- Setelah kita mengimplementasikan custom driver yang kita buat (pada contoh diatas MongoSessionHandler), langkah selanjutnya kita bisa mendaftarkanya ke dalam backend session Laravel.
+- Caranya adalah dengan menggunakan method extend() dari facade Session.
+- Dimana kita bisa memanggil method extend() tersebut dari method boot dari sebuah ServiceProvider.
+- Kita bisa menggunakan Service Provider yang sudah ada seperti App\Providers\AppServiceProvider atau membuat Provider baru. contoh :
+
+    <?php
+    namespace App\Providers;
+
+    class AppServiceProvider extends ServiceProvider
+    {
+        public function register(): void
+        {
+            ...
+        }
+
+        public function boot(): void
+        {
+            Session::extend('mongo', function(Application $app){
+                return new MongoSessionHandler;
+            });
+        }
+    }
+
+- Setelah kita mendaftarkan session driver kita, selanjutnya kita bisa menggunakan / menetukan session driver kita sebagai session driver aplikasi kita melalui variabel environment 'SESSION_DRIVER' atau melalui file konfigurasi 'config/session.php' aplikasi laravel kita.
