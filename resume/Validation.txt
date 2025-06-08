@@ -1,0 +1,80 @@
+# Pengelanan / Intro.
+- Laravel menyediakan beberapa pendekatan yang berbeda untuk melakukan validasi terhadap data yang masuk ke aplikasi laravel kita.
+- Yang paling umum adalah menggunakan method validat() yang tersedia di semua HTTP Request.
+- Tapi pada pembahasan kali ini kita juga akan membahas pendekatan lain yang juga digunakan untuk melakukan validasi.
+- Laravel menyertakan berbagai macam aturan validasi yang nyaman, yang bisa kita terapkan ke data, bahkan menyediakan kemampuan untuk melakukan validasi apakah suatu nilai dari table database itu unique.
+- Pada pembahasan ini akan membahas setiap aturan validasi secara detail sehingga kita akan familiar dengan semua fitur validasi laravel.
+
+# Quickstart validasi.
+- Untuk mempelajari tentang fitur validasi laravel yang powerfull ini, kita akan melihat pada contoh validasi lengkap pada sebuah form dan menampilkan kembali pesan error ke user.
+- Dengan membaca gambaran umum level tinggi ini, diharapkan kita bisa mendapatkan pemahaman dasar yang baik tentang bagaimana cara memvalidasi request yang masuk menggunakan laravel.
+
+# Definisikan Route.
+- Pertama mari kita asumsikan bahwa kita telah memiliki / mendefinisikan route berikut di file routes/web.php aplikasi laravel kita :
+
+    use App\Http\Controller\PostController;
+
+    Route::get('/post/create', [PostController::class, 'create']);
+    Route::post('/post', [PostController::class, 'store']);
+
+- Route 'get' akan menampilkan form ke user untuk membuat postingan blog baru, sedangkan Route 'post' digunakan untuk menyimpan postingan blog baru ke database.
+
+# Membuat Controller.
+- Selanjutnya mari kita lihat pada controller yang menangani request yang masuk ke route ini, dan untuk sementara kita akan membiarkan method store() kosong.
+
+    <?php
+    namespace App\Http\Controllers;
+
+    class PostController extends Controller
+    {
+        public function create(): View
+        {
+            return view('post.create');
+        }
+
+        public function post(Request $request): RedirectResponse
+        {
+            // memvalidasi request
+            $post = /** .. */
+            return to_route('post.show',['post' => $post->id]);
+        }
+    }
+
+# Menulis Logik Validasi.
+- Sekarang saatnya kita mengisi method store() dengan logik yang digunakan untuk memvalidasi postingan blog baru.
+- Kita akan menggunakan method validate() yang disediakan oleh object Illuminate\Http\Request.
+- Jika aturan validasi lolos, maka kode kita akan dieksekusi secara normal, jika gagal, maka sebuah exception Illuminate\Validation\ValidationException akan di lempar(throw) dan response error yang tepat akan dikirim kembali ke user.
+- Jika kegagalan validasi terjadi pada HTTP Request tradisional, maka sebuah response redirect ke URL sebelumnya akan di buat.
+- Dan jika request berupa XHR Request, maka response JSON yang berisi pesan error validasi akan direturn.
+- Baiklah, mari kita isi method store() kita :
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'title' => 'require|unique:posts|max:255',
+            'body' => 'require'
+        ]);
+
+        // logic ketika post blog validasi
+
+        return redirect('/posts);
+    }
+
+- Seperti yang bisa kita lihat diatas, bahwa aturan validasi telah di masukan kedalam method store.
+- Kita tidak perlu khawatir tentang apa saja aturan validasi yang tersedia, karena semua aturan validasi telah di dokumentasikan.
+- Dan juga, seperti yang dibahas sebelumnya, bahwa jika validasi gagal maka response yang tepat akan dibuat / digenerate, dan jika validasi lolos, maka controller kita (PostController) akan melanjutkan eksekusi kode secara normal.
+- Sebagai alternatif kita bisa menentukan aturan validasi sebagai array daripada menggunakan string pemisah tunggal |. contoh :
+
+    $validatedData = $request->validate([
+        'title' => ['require', 'unique:posts', 'max:255'],
+        'body' => ['require'],
+    ]);
+
+- Sebagai tambahan kita juga bisa menggunakan method validateWithBag() untuk memvalidasi sebuah request dan menyimpan setiap error kedalam tas error bernama. contoh :
+
+    $validatedData = $request->validateWithBag('post',[
+        'title' => ['require', 'unique:posts', 'max:255'],
+        'body' => ['require'],
+    ]);
+
+# Memberhentikan pada kegagalan validasi pertama.
