@@ -51,8 +51,8 @@
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title' => 'require|unique:posts|max:255',
-            'body' => 'require'
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required'
         ]);
 
         // logic ketika post blog validasi
@@ -66,15 +66,105 @@
 - Sebagai alternatif kita bisa menentukan aturan validasi sebagai array daripada menggunakan string pemisah tunggal |. contoh :
 
     $validatedData = $request->validate([
-        'title' => ['require', 'unique:posts', 'max:255'],
-        'body' => ['require'],
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
     ]);
 
 - Sebagai tambahan kita juga bisa menggunakan method validateWithBag() untuk memvalidasi sebuah request dan menyimpan setiap error kedalam tas error bernama. contoh :
 
     $validatedData = $request->validateWithBag('post',[
-        'title' => ['require', 'unique:posts', 'max:255'],
-        'body' => ['require'],
+        'title' => ['required', 'unique:posts', 'max:255'],
+        'body' => ['required'],
     ]);
 
 # Memberhentikan pada kegagalan validasi pertama.
+- Terkadang kita ingin menghentikan proses validasi pada suatu attribut, ketika terjadi kegagalan validasi pertama. artinya ketika suatu request tidak lolos validasi pertama kali pada suatu rules / aturan.
+- Jika kita ingin melakukan hal ini, kita bisa menambahkan rules / aturan 'bail' ke attribute yang kita inginkan. contoh :
+
+    $validated = $request->validate([
+            'title' => 'bail|required|unique:posts|max:255',
+            'body' => 'required'
+    ]);
+
+- Pada contoh diatas, jika aturan unique dari attribute 'title' tidak lolos, maka aturan 'max' tidak akan di cek.
+- Aturan / rules akan diperiksa berdasarkan urutan mereka ditugaskan.
+
+# Catatan pada Attribute bersarang.
+- Jika HTTP Request yang masuk berisi bidang data yang bersarang, kita bisa menentukan bidang ini pada aturan validasi kita dengan menggunakan syntax 'dot' (.). contoh :
+
+    $validatedData = $request->validate([
+        'title' => 'bail|required|unique:posts|max:255',
+        'author.name' => 'required',
+        'author.description' => 'required',
+    ]);
+
+- Disisi lain jika nama bidang kita mengandung literal period (tanda titik), kita bisa mencegah agar tidak diartikan sebagai syntax dot (.) dengan meng-escape-nya dengan menggunakan tanda backslash(\). contoh :
+
+    $validatedData = $request->validate([
+        'title' => 'bail|required|unique:posts|max:255',
+        'v1\.0' => 'required',
+    ]);
+
+# Menampilkan Error Validasi.
+- Selanjutnya bagaimana jika bidang request yang masuk tidak lolos aturan validasi ?
+- Seperti yang telah dijelaskan sebelumnya, bahwa laravel akan me-redirect user ke halaman sebelumnya, dan semua error validasi dan juga input request akan secara otomatis di flash ke session.
+- Selain itu sebuah variable $errors juga akan dibagikan ke semua view dari aplikasi laravel kita, oleh middleware 'Illuminate\View\Middleware\ShareErrorsFromSession' yang mana disediakan oleh group middleware 'web'.
+- Ketika ini diterapkan maka variabel $errors akan selalu tersedia di view kita, dan memungkinkan kita secara mudah mengasumsikan bahwa variabel $errors selalu didefinisikan dan dapat dengan aman di gunakan.
+- dan variabel $errors akan menjadi bagian dari object 'Illuminate\Support\MessageBag'.
+- Sehingga jika pada contoh kita sebelumnya, ketika validasi gagal (pada method store), user akan diredirect ke method create dari controller PostController kita, dan kita bisa menampilkan pesan error di view. contoh :
+
+    <!-- /resources/views/post/create.blade.php -->
+    <h1>Buat Postingan</h1>
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li> {{ $error }} </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- Create Post Form -->
+
+# Kustomisasi Pesan Error.
+- Setiap aturan validasi bawaan laravel memiliki pesan error yang berlokasi di file 'lang/en/validation.php' dari aplikasi kita.
+- Jika ketika kita membuat aplikasi laravel, folder / direktori tersebut tidak ditemukan, kita bisa memerintahkan ke laravel menggunakan perintah artisan 'php artisan lang:publish'.
+- Didalam file lang/end/validation.php terdapat entri terjemahan untuk setiap aturan validasi, dan kita bebas mengubah / memodifikasinya sesuai dengan kebutuhan dari aplikasi kita.
+- Sebagai tambahan, kita bisa menyalin folder ini ke direktori langaunge lain untuk menerjemahkan pesan untuk aplikasi kita.
+- Note : secara default kerangka aplikasi laravel tidak menyertakan direktori lang, jika kita ingin mengkostumisasi bahasa file bahasa (langaunge) laravel, kita bisa mempublishnya melalui perintah artisan 'lang:publish'.
+
+# Request dan Validasi XHR.
+- Pada contoh yang sudah dibahas sebelumnya kita menggunakan form tradisional (klasik) untuk mengirim data ke aplikasi.
+- Tapi banyak aplikasi juga menerima request dari Javascript yang berasal dari frontend.
+- Laravel tidak akan menghasilkan response redirect ketika memvalidasi data dari request XHR, tapi akan menghasilkan sebuah response JSON yang berisi semua error validasi.
+- Response JSON ini akan dikirimkan bersama dengan status kode HTTP 422.
+
+# Directive @error
+- Kita juga bisa menggunakan directive blade @error untuk secara cepat memeriksa apakah pesan error validasi untuk suatu attribute itu tersedia / tidak.
+- Dengan directive blade @error kita bisa menampilkan pesan error yang ada, dengan mengechokan $message di dalamnya. contoh :
+
+    <!-- /resources/views/post/create.blade.php -->
+    <label for="title">Judul Postingan</label>
+    <input type="text" name="title" id="title" class="@error('title') is-invalid @enderror">
+    @error('title')
+        <alert class="alert alert-danger">{{ $message }}</alert>
+    @enderror
+
+- Jika kamu menggunakan tas error bernama (named error bags) kita bisa memberikan tas error bernama sebagai argument ke 2 dari directive @error. contoh :
+
+        <input type="text" name="title" id="title" class="@error('title', 'post') is-invalid @enderror">
+
+# Mengisi Ulang Forms.
+- Ketika laravel membuat sebuah response redirect karena kesalahan / error validasi, framework akan secara ototmatis mem-flash semua data input request ke session.
+- Hal ini dilakukan agar kita bisa dengan mudah / nyaman mengakses data input selama request selanjutnya, dan juga mengisi ulang form yang telah user coba untuk submit.
+- Untuk mengambil data input yang di flash dari request sebelumnya, panggil method old() pada object 'Illuminate\Http\Request'.
+- Method old() akan menarik / mengambil semua data input yang di flash sebelumnya dari session. contoh :
+
+    $title = $request->old('title');
+
+- Laravel juga menyediakan global helper old() yang bisa kamu gunakan untuk menampilkan input lama di Blade Template.
+- Dan akan lebih mudah untuk menggunakan helper method old() untuk mengisi ulang form, jika data lama tidak ada, makan null akan di return. contoh :
+
+        <input type="text" name="title" value="{{ old('title') }}">
