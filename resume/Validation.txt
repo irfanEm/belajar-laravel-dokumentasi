@@ -168,3 +168,86 @@
 - Dan akan lebih mudah untuk menggunakan helper method old() untuk mengisi ulang form, jika data lama tidak ada, makan null akan di return. contoh :
 
         <input type="text" name="title" value="{{ old('title') }}">
+
+# Catatan untuk bidang opsional.
+- Secara default laravel menyertakan middleware TrimStrings dan ConvertEmptyStringsToNull pada tumpukan middleware global aplikasi laravel kita.
+- Dan karena hal ini kita akan sering, harus menandai bidang request opsional kita sebagai 'nullable', jika kita ingin validator menganggap nilai null sebagai invalid. contoh :
+
+    $validated = $request->validate([
+            'title' => 'bail|required|unique:posts|max:255',
+            'body' => 'required',
+            'publish_at' => 'nullable|date',
+    ]);
+
+- Pada contoh diatas kita menentukan bahwa bidang / field publish_at dapat berisi null atau representasi tanggal yang valid.
+- Jika kita tidak menambahkan modifier 'nullable' ke definisi rule, maka validator akan menganggap null sebagai tanggal yang tidak valid(invalid).
+
+# Format Response Validasi Error.
+- Ketika aplikasi laravel kita melemparkan (throw) sebuah exception 'Illuminate\Exception\ValidationException' dan HTTP Request yang masuk mengharapkan response JSON, maka laravel akan secara otomatis memformat pesan error untuk kita, dan mengembalikan HTTP Response 422 Unprocessable Entity.
+- Dibawah ini adalah contoh format response JSON untuk error validasi. yang perlu dicatat adalah bahwa key dari error bersarang diratakan dengan format notasi dot (.). contoh :
+
+    {
+        "message": "Nama team harus berupa string. (dan 4 error lainya.)",
+        "errors": {
+            "team_name": [
+                "Nama team harus berupa string.",
+                "Nama team harus berupa setidaknya satu karakter."
+            ],
+            "authorization.role": [
+                "Authorization role yang dipilih tidak valid."
+            ],
+            "users.0.email": [
+                "users.0.email dibutuhkan."
+            ],
+            "users.2.email": [
+                "users.2.email harus berupa email yang valid."
+            ]
+        }
+    }
+
+# Validasi Form Request.
+# Membuat form request.
+- Jika kita ingin membuat sekenario validasi request yang lebih kompleks, kita bisa membuat sebuah form request.
+- Form request adalah sebuah class request kustom yang merangkum logic validasi dan authorizai milik mereka sendiri.
+- Untuk membuat sebuah class form request, kita bisa menggunakan perintah artisan 'make:request'. contoh :
+
+    php artisan make:request StorePostRequest
+
+- Class form request yang dihasilkan akan ditempatkan di direktori 'app/Http/Requests'.
+- Jika aplikasi laravel kita tidak memiliki direktori tersebut, maka laravel akan membuatnya ketika kita menjalankan perintah artisan 'make:request'.
+- Setiap class form request yang dihasilkan oleh laravel akan memiliki 2 method yaitu : authorize dan rules.
+- Method authorize() bertanggung jawab untuk menentukan apakah user terkini yang terautentikasi dapat melakukan action yang diwakili oleh request.
+- Sedangkan method rules() mengembalikan aturan / rules validasi yang harus kita terapkan ke data request. contoh method rules() :
+
+    public function rules(): array
+    {
+        return [
+            'title' => 'bail|required|unique:posts|max:255',
+            'body' => 'required',
+        ]
+    }
+
+- Kita juga bisa mengetikan dependencies apapun yang kita butuhkan di signature method rules, mereka akan secara otomatis di resolve oleh service container laravel.
+- Selanjutnya bagaimana aturan validasi yang telah kita buat akan divalidasi (diterapkan) ?
+- Kita hanya perlu menuliskan request ke method controller kita.
+- Nantinya secara otomatis form request yang masuk akan di eksekusi sebelum method controller dieksekusi.
+- Yang artinya kita tidak perlu mengacaukan method controller kita dengan logic validasi apapun. contoh :
+
+    public function store(StorePostRequest $request): RedirectResponse
+    {
+        // mengambil semua data input yang divalidasi
+        $validated = $request->validated();
+
+        // mengambil sebagian data input yang divalidasi
+        $validated = $request->safe()->only(['title', ]);
+        $validated = $request->safe()->except(['author', 'subtitle']);
+
+        // logic untuk menyimpan post blog
+
+        // redirect user.
+        return redirect('/posts');
+    }
+
+- Jika validasi gagal, maka response redirect akan dibuat yang akan mengembalikan user ke halaman sebelumnya.
+- Dan error juga akan di flash ke session, sehingga mereka tersedia ketika kita ingin menampilkanya.
+- Jika request berupa XHR, maka HTTP Response dengan status code 422 akan di return ke user dengan menyertakan representasi JSON dari error validasi.
