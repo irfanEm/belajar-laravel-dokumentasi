@@ -251,3 +251,7 @@
 - Jika validasi gagal, maka response redirect akan dibuat yang akan mengembalikan user ke halaman sebelumnya.
 - Dan error juga akan di flash ke session, sehingga mereka tersedia ketika kita ingin menampilkanya.
 - Jika request berupa XHR, maka HTTP Response dengan status code 422 akan di return ke user dengan menyertakan representasi JSON dari error validasi.
+
+# Melakukan Validasi Tambahan.
+- Terkadang mungkin kita ingin melakukan validasi tambahan setelah validasi awal kita selesai / komplit.
+- Jika kita inging melakukan hal ini, kita bisa menggunakan method after() milik form request.
