@@ -255,3 +255,121 @@
 # Melakukan Validasi Tambahan.
 - Terkadang mungkin kita ingin melakukan validasi tambahan setelah validasi awal kita selesai / komplit.
 - Jika kita inging melakukan hal ini, kita bisa menggunakan method after() milik form request.
+- Method after() harus mengembalikan sebuah array yang berisi function closure / callable (function yang dapat dipanggil) yang akan dipanggil ketika validasi selesai.
+- Callable / closure ini akan menerima sebuah object 'Illuminate\Validation\Validator' yang memungkinkan kita untuk memunculkan pesan error tambahan jika diperlukan. contoh :
+
+    use Illuminate\Validation\Validator;
+
+    public function after(): array
+    {
+        return [
+            function(Validator $validator) {
+                if($this->somethingElseIsInvalid()) {
+                    $validator->errors()->add([
+                        'field',
+                        'Ada sesuatu yang salah pada field / bidang ini.'
+                    ]);
+                }
+            }
+        ];
+    }
+
+- Selain closure, array yang dikembalikan method after() juga berisi class yang dapat dipanggil (invokable class), yang mana method __invoke() dari class ini akan menerima object 'Illuminate\Validation\Validator'. contoh :
+
+    use Illuminate\Validation\Validator;
+
+    public function after(): array
+    {
+        return [
+            new ValidateUserStatus,
+            new ValidateShipingTime,
+            function(Validator $validator) {
+                if($this->somethingElseIsInvalid()) {
+                    $validator->errors()->add([
+                        'field',
+                        'Ada sesuatu yang salah pada field / bidang ini.'
+                    ]);
+                }
+            }
+        ];
+    }
+
+# Berhenti pada kegagalan validasi pertama.
+- dalam class form request yang kita buat, kita bisa menambahkan properti $stopOnFirstFailure yang berguna untuk memberitahukan ke class bahwa dia harus memberhentikan validasi pada semua attribute ketika terjadi kegagalan validasi pada suatu attribute. contoh :
+
+    protected $stopOnFirstFailure = true;
+
+# Kustomisasi Lokasi Redirect.
+- Ketika validasi dari form request gagal, laravel akan menghasilkan sebuah response redirect yang akan mengirimkan user kembali ke halaman sebelumnya.
+- Jika kita ingin mengkustomisasi perilaku ini (lokasi dari redirect), kita bisa mendefinisikan properti $redirect di dalam class form request kita. contoh :
+
+    protected $redirect = '/dashboard';
+
+- Atau jika kita ingin meredirect user ke route bernama, kita bisa menggunakan / mendefinisikan properti $redirectRoute. contoh :
+
+    protected $redirectRoute = 'dashboard';
+
+# Otorisasi Form Request.
+- Seperti yang sudah dibahas sebelumnya bahwa di dalam class form request juga terdapat method authorize().
+- Didalam method ini kita bisa menentukan apakah user yang diautentikasi benar benar memiliki otorisasi untuk mengubah resource yang diberikan.
+- Sebagai contoh : kita bisa menentukan apakah seorang user itu adalah pemilik dari komentar blog yang sedang coba mereka perbarui.
+- Didalam method ini kemungkinan kita akan sering berhadapan dengan kebijakan dan gerbang autorisasi. contoh :
+
+    use App\Models\Comment;
+
+    public function authorize(): bool
+    {
+        $comment = Comment::find($this->route('comment'));
+
+        return $comment && $this->user()->can('update', $comment);
+    }
+
+- Pada contoh diatas, kita bisa memanggil method user() yang memungkinkan kita untuk mengakses user terkini yang sudah diautentikasi.
+- Hal ini terjadi karena semua class form request itu meng-extends class request dasar laravel.
+- Selanjutnya kita juga perhatikan pemanggilan method route(). Method ini memungkinkan kita untuk mengakses parameter yang didefinisikan pada route yang dipanggil.
+- Sebagai contoh : kita bisa mengakses parameter {comment} dari route berikut :
+
+    Route::get('/comment/{comment}');
+
+- Jika aplikasi kita menggunakan / memanfaatkan route model binding, kita bisa membuat kode kita lebih effisien. contoh :
+
+    use App\Models\Comment;
+
+    public function authorize(): bool
+    {
+        $comment = Comment::find($this->route('comment'));
+
+        return $this->user()->can('update', $this->comment);
+    }
+
+- Jika method authorize() mengembalikan 'false', maka HTTP Response dengan status code 403 akan direturn secara otomatis, dan method dari controller kita tidak akan dieksekusi.
+- Jika mungkin kita ingin menangani logic otorisasi (authorization) dibagian lain dari aplikasi kita, kita dapat menghapus method authorize() sepenuhnya, atau lebih sederhananya kita bisa me-return true. contoh :
+
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+# Kustomisasi Pesan Error Form Request.
+- Kita juga dapat mengkustomisasi pesan error dari class form request, yaitu dengan cara meng-overriding method messages().
+- Method ini harus mengembalikan sebuah array yang berisi pasangan attribute - rules dan pesan error mereka yang sesuai. contoh :
+
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Judul ini tidak boleh kosong !',
+            'body.required' => 'Body tidak boleh kosong !',
+        ];
+    }
+
+# Kustomisasi Attribute Validasi.
+- Kebanyakan pesan error dari rule validasi bawaan laravel itu berisi placeholder ':attribtue'.
+- Jika kita ingin mengkustomisasi placeholder :attribute dari pesan validasi aplikasi kita dengan nama attribute custom, kita bisa melakukanya dengan mengoverride method attributes().
+- Method attributes() harus mengembalikan sebuah array yang berisi  pasangan nama placeholder attribute dan nama custom placeholder. contoh :
+
+    public function attributes(): array
+    {
+        return [
+            'email' => 'alamat email',
+        ];
+    }
