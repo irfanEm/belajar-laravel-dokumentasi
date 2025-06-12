@@ -373,3 +373,121 @@
             'email' => 'alamat email',
         ];
     }
+
+# Mempersiapkan Input untuk Validasi.
+- Ketika kita mungkin perlu membersihkan atau mempersiapkan data dari request sebelum menerapkan rules validasi, kita bisa menggunakan method prepareForValidation(). contoh :
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'slug' => Str::slug($this->slug);
+        ]);
+    }
+
+- Begitu juga ketika kita perlu menormalisasikan data request apapun setelah proses validasi selesai, kita bisa gunakan method passedValidation(). contoh :
+
+    protected function passedValidation(): void
+    {
+        $this->replace([
+            'name' => 'Adam'
+        ]);
+    }
+
+# Membuat Validator secara Manual.
+- Jika kita tidak ingin menggunakan method validate() yang ada pada object request, kita bisa membuat object Validator kita sendiri, yaitu dengan menggunakan facade Validator.
+- Method make() yang ada pada facade Validator akan men-generate / membuatkan object validator baru. contoh :
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required',
+        ]);
+
+        if($validator->fails()){
+            redirect('/post/create')
+                ->withErrors($validator)
+                ->withInput();
+        };
+
+        // Mengambil semua data yang sudah divalidasi
+        $validated = $validator->validated();
+
+        // Mengambil beberapa bagian data saja
+        $someValidated = $validator->safe()->only('author', 'post');
+        $someValidated = $validator->safe()->except('author', 'post');
+
+        return redirect('/posts');
+    }
+
+- Argument pertama yang diberikan pada method make() adalah data request yang akan divalidasi.
+- Sedangkan argument ke2 adalah array dari aturan validasi yang akan diterapkan ke data request.
+- Setelah kita menentukan apakah terdapat kegagalan pada validasi request, kita dapat menggunakan method withErrors() untuk mem-flash semua error ke session.
+- Selain itu variable $errors secara otomatis juga akan tersedia di semua view dari aplikasi kita setelah redirect, yang memungkinkan kita untuk menampilkanya kembali ke user.
+- Method withErrors() menerima sebuah object validator, errorBags, atau array PHP.
+
+# Berhenti pada Kegagalan Validasi Pertama.
+- Jika kita ingin menghentikan validasi pada semua attribute ketika terjadi kegagalan validasi tunggal, kita bisa menggunakan method stopOnFirstFailure() pada object validator. contoh :
+
+    if($validator->stopOnFirstFailure()->fails()) {
+        // action
+    }
+
+- Jika kita ingin membuat object validator secara manual, tapi tetap ingin memanfaatkan auto redirect dari method validate() dari HTTP Request, kita bisa memanggil method validate pada object validator yang ada. contoh :
+
+    $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required',
+        ])->validate();
+
+- Jika validasi gagal, maka user akan secara otomatis di redirect, atau jika dalam kasus request XHR, maka sebuah response JSON akan di return.
+- Jika kita ingin menyimpan errors kedalam tas error bernama (named errors bag) jika terjadi kegagalan validasi, kita bisa menggunakan method validateWithBag(). contoh :
+
+    $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required',
+        ])->validateWithBag('post');
+
+# Tas Error Bernama.
+- Ketika kita punya banyak form dalam satu halaman web, dan kita ingin memberikan nama untuk errorbag yang berisi error validasi, sehingga memungkinkan kita untuk mengambil pesan error untuk form tertentu.
+- Untuk melakukan ini kita bisa memberikan nama sebagai argument ke2 dari method withErrors(). contoh :
+
+    return redirect('/dashboard')->withErrors($validator, 'login');
+
+- dan selanjutnya kita bisa mengakses object MessageBag bernama dari variable $errors sebagai berikut :
+
+    {{ $errors->login->first('email') }}
+
+# Pesan Error Kustom.
+- Jika kita mau, kita bisa menyediakan pesan error kustom (buatan sendiri) yang harus object validator gunakan, daripada menggunakan pesan error bawaan laravel.
+- Terdapat beberapa cara untuk melakukan hal ini. Pertama kita bisa memberikan pesan custom sebagai argument ke 3 dari method Validator::make(). contoh :
+
+    $validator = Validator::make(request->all(), $rules, [
+        'required' => ':attribute ini tidak boleh kosong !'
+    ]);
+
+- Placeholder :attribute pada contoh diatas akan digantikan dengan nama sebenarnya dari bidang / field yang sedang di validasi.
+- Selain itu kita juga bisa menggunakan placeholder holder lain di pesan validasi. contoh :
+
+    $messages = [
+        'same' => 'bidang :attribtue harus sama dengan :other !',
+        'size' => 'bidang :attribute harus benar benar bernilai :size',
+        'between' => 'nilai :attribute harus berada diantara :min - :max',
+        'in' => ':attribute harus berpa salah satu dari nilai : :values'
+    ];
+
+# Menentukan Pesan Custom untuk Attribute yang diberikan.
+- Jika kita ingin menentukan pesan error custom untuk attribute tertentu, kita dapat melakukanya dengan menggunakan notasi dot (.).
+- Caranya adalah dengan tentukan terlebih dahulu nama attributenya, notasi dot, lalu rule validasinya. contoh :
+
+    $messages = [
+        'email.required' => ':attribute harus berisi data email yang valid !',
+    ];
+
+# Menentukan Nilai Custom Attribute.
+- Kebanyakan pesan error bawaan laravel menyertakan placeholder :attribute yang akan digantikan dengan nama bidang atau attribute yang sedang divalidasi.
+- Jika kita ingin mengkustom nilai yang digunakan untuk menggantikan placeholder ini untuk bidang tertentu, kita bisa memberikan array yang berisi attribute custom sebagai argument ke 4 dari method Validator::make(). contoh :
+
+    $validator = Validator::make($request->all(), $rules, $messages, [
+        'email' => 'alamat email'
+    ]);
