@@ -491,3 +491,44 @@
     $validator = Validator::make($request->all(), $rules, $messages, [
         'email' => 'alamat email'
     ]);
+
+# Melakukan Validasi Tambahan pada Validator yang dibuat secara Manual.
+- Terkadang kita mungkin harus melakukan validasi tambahan setelah validasi pertama selesai.
+- Untuk mencapai ini kita bisa menggunakan method after().
+- Method after() menerima closure / callable(sesuatu yang dapat dipanggil) yang akan dipanggil setelah validasi selesai.
+- Callable / closure yang diberikan akan menerima sebuah object Illuminate\Validation\Validator yang mana memungkinkan kita untuk meningkatkan pesan error tambahan jika dibutuhkan. contoh :
+
+    $validator = Validator::make($data, $rules, $messages, $attr);
+
+    $validator->after(function($validator){
+        if($this->somethingElseIsInvalid()) {
+            $validator->errors()->add(
+                'field' => 'Ada yang salah dengan field ini !'
+            );
+        }
+    });
+
+    if($validator->fails() {
+        // ...
+    });
+
+- Seperti yang disebutkan sebelumnya bahwa method after() juga menerima array yang berisi callable(sesuatu yang dapat dipanggil).
+- Yang mana khususnya nyaman digunakan ketika logic dari validasi after kita di enkapsulasi (dibungkus) didalam sebuah class.
+- Dimana class tersebut akan menerima object Illuminate\Validation\Validator di method __invoke() mereka.
+
+    $validator = Validator::make($data, $rules, $messages, $attr);
+
+    $validator->after(
+        new ValidateUserStatus,
+        new ValidateShipingTime,
+        function($validator){
+        if($this->somethingElseIsInvalid()) {
+            $validator->errors()->add(
+                'field' => 'Ada yang salah dengan field ini !'
+            );
+        }
+    });
+
+    if($validator->fails() {
+        // ...
+    });
