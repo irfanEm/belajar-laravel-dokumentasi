@@ -532,3 +532,42 @@
     if($validator->fails() {
         // ...
     });
+
+- Jika kita mungkin memvalidasi bidang form array, kita bisa mengambil semua pesan error dari setiap element array menggunakan karakter bintang (*). contoh :
+
+    @foreach($errors->get('attachments.*') as $message) {
+        // ..
+    }
+
+# Mengambil semua pesan error dari semua field(bidang).
+- Ketika kita ingin mengambil semua pesan error dari semua field(bidang), kita bisa menggunakan method all(). contoh :
+
+    @foreach($errors->all() as $message) {
+        // ...
+    }
+
+# Menentukan apakah sebuah pesan error untuk sebuah field itu tersedia / tidak.
+- Dengan method has() kita bisa menentukan apakah pesan error untuk sebuah bidang itu ada. contoh :
+
+    @if($errors->has('email')) {
+        // ...
+    }
+
+# Menentukan Pesan Custom di file Langauge.
+- Setiap aturan validasi bawaan laravel memiliki pesan error yang berlokasi di file 'lang/en/validation.php'.
+- Jika aplikasi laravel yang kita buat tidak memiliki direktori tersebut(lang), kita bisa mengintruksikan ke laravel untuk membuatnya menggunakan perintah artisan lang:publish.
+- Didalam file 'lang/en/validation.php' kita akan menemukan entri terjemahan untuk setiap aturan validasi.
+- Kita bebas untuk memodifikasi / merubah pesan tersebut berdasarkan kebutuhan dari aplikasi kita.
+- Sebagai tambahan kita bisa menyalin(copy) file ini ke dalam direktori direktori langauge lain untuk menerjemahkan pesan untuk bahasa aplikasi kita.
+- Secara default kerangka kerja laravel tidak menyertakan direktori 'lang', jika kita ingin melakukan kustomisasi file langauge laravel, kita bisa mempublish-nya menggunakan perintah artisan lang:publish.
+
+# Kustom Pesan untuk Attribute Spesifik.
+- Kita bisa melakukan kustomisasi terhadap pesan error yang digunakan untuk kombinasi attribute dan rule didalam file langauge dari validasi aplikasi laravel kita.
+- Untuk melakukanya tambahkan pesan kustom kita ke dalam array 'custom' dari file 'lang/xx/validation.php' dari aplikasi laravel kita. contoh :
+
+    'custom' => [
+        'email' => [
+            'required' => 'Email wajib diisi !',
+            'unique' => 'Email sudah digunakan !'
+        ],
+    ]
