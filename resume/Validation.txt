@@ -532,3 +532,57 @@
     if($validator->fails() {
         // ...
     });
+
+# Bekerja dengan Input yang telah di Validasi.
+- Setelah memvalidasi data request yang masuk menggunakan form request atau object validator yang dibuat secara manual, kita bisa mengambil data yang telah menjalani proses validasi dengan beberapa cara.
+- Pertama kita bisa menggunakan method validated() dari form request atau object validator yang dibuat secara manual.
+- Method ini akan mengembalikan array dari data yang telah divalidasi. contoh :
+
+    $validated = $request->validated();
+
+    $validated = $validator->validated();
+
+- Sebagai alternatif kita bisa menggunakan method safe() dari form request atau object validator.
+- Method ini akan mengembalikan sebuah object Illuminate\Support\ValidatedInput, dimana object ini akan mengekspos method only(), expect() dan all() yang akan mengambil sebagian atau bahkan seluruh array dari data yang divalidasi.
+
+    $validated = $request->safe()->only(['name', 'username']);
+    $validated = $request->safe()->except(['name', 'username']);
+    $validated = $request->safe()->all();
+
+- Sebagai tambahan, object Illuminate\Support\ValidatedInput juga dapat di iterasi dan diakses seperti halnya array. contoh :
+
+    // iterasi layaknya array
+    @foreach($request->safe() as $key => $value)
+        // ..
+    @endforeach
+
+    // akses layaknya array
+    $validated = $request->safe();
+    $email = $validated['email'];
+
+- Jika kita ingin menambahkan field(bidang) tambahan ke data yang sudah divalidasi, kita bisa memanggil method merge(). contoh :
+
+    $validated = $request->safe()->merge(['name' => 'Zaidun Qoimun']);
+
+- Sedangkan jika kita ingin mengambil data yang divalidasi sebagai object collection, kita bisa memanggil method collect(). contoh :
+
+    $validated = $request->safe()->collect();
+
+# Bekerja dengan Pesan Error.
+- Setelah memanggil method errors() dari object validator, kita akan menerima object Illuminate\Support\MessageBag.
+- Yang mana object ini memiliki berbagai macam method yang bisa kita gunakan untuk bekerja menggunakan pesan error.
+- Variabel $errors akan secara otomatis dibuat tersedia(available) disemua views yang juga merupakan bagian dari class MessageBag.
+
+# Mengambil Pesan Error Pertama untuk Field(bidang) tertentu.
+- Jika kita ingin mengambil pesan error pertama untuk bidang yang diberikan / ditentukan kita bisa menggunakan method first(). contoh :
+
+    $errors = $validator->errors();
+
+    echo $errors->first('email');
+
+# Mengambil semua pesan untuk bidang yang ditentukan.
+- Ketika kita ingin mengambil array dari semua pesan untuk bidang yang ditentukan, kita bisa menggunakan method get(). contoh :
+
+    @foreach($errors->get('email') as $message) {
+
+    }
