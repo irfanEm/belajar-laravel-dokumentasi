@@ -625,3 +625,132 @@
             'unique' => 'Email sudah digunakan !'
         ],
     ]
+
+# Menentukan Attribute di file Langauge.
+- Kebanyakan pesan error bawaan Laravel menyertakan placeholder :attribute yang digantikan dengan nama bidang atau attribute yang sedang divalidasi.
+- Jika kita ingin mengkustom bagian :attribute dari pesan validasi aplikasi Laravel kita dengan nilai lain, kita bisa menentukan nama attribute kustom kita di array 'attributes' dari file 'lang/xx/validation.php'. contoh :
+
+	'attributes'=> [
+		'email' => 'alamat email',
+	],
+
+# Menentukan Nilai di file Langauge.
+- Beberapa pesan error dari validasi bawaan Laravel berisi placeholder :value, yang akan digantikan dengan nilai terkini dari attribute request.
+- Tapi terkadang kita harus menggantikan bagian :value dari pesan validasi dengan representasi kustom dari nilai tersebut.
+- Sebagai contoh, misalkan pada contoh rule berikut, nomor kartu kredit itu harus ada (required) Ketika nilai payment_type-nya berupa 'cc'. contoh :
+
+	Validator::make([
+		'credit_card_number' => 'required_if:payment_type,cc'
+	]);
+
+- Ketika aturan validasi diatas gagal, maka akan menghasilkan pesan error berikut :
+
+	'The credit card number is required when payment type is cc'
+
+- Daripada kita menampilkan 'cc' sebagai nilai payment type, kita bisa menentukan representasi nilai yang lebih ramah pengguna(user-friendly) di file language 'lang/xx/validation.php' kita dengan mendefinisikan sebuah array 'values'. contoh :
+
+	'values' => [
+		'payment_type' => [
+			'cc' => 'credit card',
+		],
+	],
+
+- Setelah mendefinisikan nilai ini, aturan validasi akan menghasil pesan error berikut :
+
+	'The credit card number is required when payment type is credit card'
+
+# Aturan Validasi yang Tersedia.
+- Berikut adalah daftar dari semua rule(aturan) validasi yang tersedia dan fungsinya :
+	- accepted :
+	bidang yang sedang divalidasi harus berupa "yes", "on", 1, "1", true, atau "true". Ini sangat berguna untk penerimaan "Terms and Services" dan bidang yang mirip.
+	- accepted_if:fieldlain,value,.. :
+	bidang yang sedang divalidasi harus berupa "yes", "on", 1, "1", true, "true", jika bidang lain yang divalidasi itu sama dengan nilai yang ditentukan.
+	- active_url :
+	bidang yang divalidasi harus memiliki record A atau AAA yang valid menurut function PHP dns_get_record(). Hostname yang disediakan url akan di extract menggunakan function PHP parse_url() sebelum diberikan ke dns_get_record().
+	- after:tanggal :
+	bidang yang sedang divalidasi harus berupa nilai setelah tanggal yang diberikan. Tanggal aka diberikan ke fungsi PHP strtotime() dengan tujuan di convert ke object Datetime yang valid. contoh :
+
+	'start_date' => 'required|date|after:tomorrow'
+
+	daripada membandingkanya dengan string tanggal yang harus dievaluated oleh strtotime(), kita bisa menentukan field lain untuk dibandingkan dengan tanggal. contoh :
+
+	'finish_date' => 'required|date|after:start_date'
+
+	Untuk kemudahan / kenyamanan, aturan berbasis tanggal dapat di bangun menggunakan pembangun aturan tanggal yang fasih. contoh :
+
+	'start_date' => ['required',Rule::date()->after(today()->addDays(7)),]
+
+	Dengan method afterToday() atau todayOrAfter() kita bisa secara cepat menentukan tanggal harus setelah hari ini, hari ini atau setelahnya. contoh :
+
+	'start_date' => ['required', Rule::date()->afterToday(),]
+
+	- after_or_equal:tanggal
+	bidang yang sedang divalidasi harus berupa nilai setelah atau sama dengan tanggal yang diberikan.
+	untuk informasi lebih lanjut, kita bisa lihat pada rule after.
+	untuk kemudahan rule berbasis tanggal juga bisa dibangun menggunakan pembangun rule tanggal. contoh :
+
+	'start_date' => ['required',Rule::date()->afterOrEqual(today()->addDays(7)),]
+
+	- anyOf :
+	aturan validasi Rule::anyOf memungkinkan kita untuk menentukan bahwa bidang yang sedang divalidasi harus memenuhi salah satu set aturan validasi yang diberikan.
+	sebagai contoh aturan berikut akan memvalidasi bahwa bidang username itu harus diantara email, atau string alpha-numeric(termasuk dash) yang paling tidak memiliki 6 karakter.contoh :
+
+	use Illuminate\Validation\Rule;
+
+	'username' => [
+		'required',
+		Rule::anyOf([
+			['string','email'],
+			['string','alpha_dash','min:6'],
+		]),
+	],
+
+	- alpha :
+	bidang yang sedang divalidasi harus berupa karakter alpha Uniqode yang dikandung di dalam \p{L} dan \p{M}.
+	untuk mengetatkan aturan ini ke karakter di dalam range ASCII(a-z dan A-Z) kita bisa menyediakan opsi 'ascii' ke aturan validasi. contoh:
+
+	'username' => 'alpha:ascii'
+
+	- alpha_dash :
+	bidang yang sedang divalidasi seluruhnya harus berupa karakter alpha-numeric Unicode yang dikandung dalam \p{L}, \p{N}, p{M}, dan juga ASCII dash(-) dan ASCII underscore(_).
+	untuk mengetatkan aturan validasi ini ke range karakter(a-z, A-Z dan 0-9) kita bisa memberikan opsi 'ascii' ke rule validasi.
+
+	'username' => 'alpha_dash:ascii'
+
+	- alpha_num :
+	bidang yang sedang divalidasi seluruhnya harus berupa karakter alpha-numeric Unicode yang dikandung dalam \p{L}, \p{N}, p{M}.
+	untuk mengetatkan aturan validasi ini ke range karakter(a-z, A-Z dan 0-9) kita bisa memberikan opsi 'ascii' ke rule validasi.
+
+	'username' => 'alpha_num:ascii'
+
+	- array :
+	bidang yang sedang di validasi harus berupa array PHP.
+	ketika nilai tambahan dierikan untk rule ini, setiap kunci yang ada didalam array input harus ada didalam daftar nilai yang disediakan oleh rule.
+	pada contoh berikut, key 'admin' itu invalid, karena dia tidak ada didalam dafar nilai yang terkandung di dalam rule array. contoh :
+
+	use Illuminate\Suport\Facades\validator;
+
+	$input = [
+		'user'' => [
+			'name' => 'Zaidun Qoimun',
+			'username' => 'zaid_isqoim@mail.com',
+			'admin' => true,
+		],
+	];
+
+	Validator::make($iput, [
+		'user' => 'array:name,username',
+	]);
+
+	umumnya kita harus selalu menentukan kunci(key) array yang diijinkan ada didalam array kita.
+
+	- ascii :
+	bidang yang sedang divalidasi harus seluruhnya berupa karakter 7-bit ASCII.
+
+	- bail :
+	berhenti menjalankan aturan validasi pada suatu attribute setelah kegagalan validasi pertama.
+	sementara aturan 'bail' hanya akan menghentikan validasi pada bidang tertentu Ketika dia menemukan sebuah kegagalan validasi, method 'stopOnFirstFailure()' akan menginformasikan ke validator bahwa dia harus menghentikan semua validasi attribute karena kegagalan validasi tunggal yang terjadi.
+
+	if($validator->stopOnFirstFailure()) {
+		// ...
+	}
