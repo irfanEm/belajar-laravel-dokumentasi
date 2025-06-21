@@ -754,3 +754,21 @@
 	if($validator->stopOnFirstFailure()) {
 		// ...
 	}
+
+    - before:tanggal
+	Bidang yang sedang divalidasi harus ua nilai sebelumnya dari tanggal yang diberikan.
+	Data yang diberian ke fungsi php strtotime() akan dikonversi ke object DateTime yang valid.
+	Seperti method after() nama dari field lain juga dapat disediakan sebagai nilai date.
+	Untuk kemudahan aturan berbasis tanggal dapat dibuat menggunakan pembuat aturan 'date'. contoh :
+
+	'start_date' => [
+		'required',
+		Rule::date()->before(today()->subDays(7)),
+	],
+
+	tapi dengan method beforeToday() dan todayOrBefore() kita bisa mengekspresikan dengan mudah tanggal yang harus menjadi sebelum hari ini (before today), hari ini (today) atau sebelmnya (before) secara sendiri sendiri. contoh :
+
+	'start_date' => [
+		'required',
+		Rule::date()->beforeToday(),
+	],
