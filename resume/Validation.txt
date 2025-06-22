@@ -772,3 +772,111 @@
 		'required',
 		Rule::date()->beforeToday(),
 	],
+
+    - before_or_equal:tanggal
+    bidang yang sedang divalidasi harus nilai sebelum atau sama dengan tanggal yanga diberikan.
+    tanggal akan diberikan ke fungsi PHP strtotime() untuk konversi menjadi objek DateTime yang valid.
+    sebagai tambahan, seperti halnya rule 'after()' bidang lain yang sedang divalidasi dapat disediakan sebagai nilai dari tanggal(date).
+    dan juga untuk kemudahan aturan (rule) berbasis tanggal dapat dibuat menggunakan rule builder tanggal. Contoh :
+
+        'start_date' => [
+            'required',
+            Rule::date()->beforeOrEqual(today()->subDays(7)),
+        ],
+
+    - min dan max
+    bidang yang sedang divalidasi harus berada diantara nilai min dan max yang diberikan.
+    strings, angka, array, dan file akan dievaluasi dengan cara yang sama.
+
+    - boolean
+    bidang yang divalidasi harus dapat diubah menjadi boolean.
+    input yang diterima : trus, false, 1, 0, "1", "0".
+
+    - confirmed
+    bidang yang sedang divalidasi harus memiliki bidang konfirmasi yang sesuai.
+    sebagai contoh, jika bidang yang sedang divalidasi adalah 'password', maka bidang 'password_confirmation' harus ada di input.
+    selain itu ita juga bisa memberikan nama bidang konfirmasi kustom, sebagai contoh : confirmed:repeat_username akan mengharapkan bidang / field repeat_username di input untuk dicocokan dengan bidan gyang sedang divalidasi.
+
+    - contains:foo,bar,..
+    bidang yang divalidasi harus berupa array yang berisi semua niali parameter yang diberikan.
+    Karena nantinya kita sering herus mengimplode sebuah array, kita bisa menggunakan method Rule::contains() untuk membuat rule dengan fasih. contoh:
+
+    Validator::make($data, [
+        'required',
+        'array',
+        Rule::contains(['admin', 'editor'])
+    ]);
+
+    - current_password
+    bidang yang dibalidasi harus sesuai dengan password user yang divalidasi.
+    kita juga bisa menentukan guard(penjaga) autentikasi dengan menentukanya di parameter pertama dari rule(aturan). contoh :
+
+    'password' => 'current_password:api'
+
+    - date
+    bidang yang sedang divalidasi harus berupa tanggal yang valid dan tidak relative, sesuai dengan fungsi PHP strtotime().
+
+    -date_equals:tanggal
+    bidang yang divalidasi harus sama dengan tanggal yang diberikan.
+    tanggal yang diberikan akan di berikan ke fungsi PHP strtotime() untuk dikonversi ke object DateTime yang valid.
+
+    - date_format:format,...
+    bidang yang sedang divalidasi harus sesuai dengan salah satu format yang diberikan.
+    kita harus menggunakan salah satu dari rule date atau date_format, jangan keduanya.
+    aturan validasi ini menndukung semua format yang didukung oleh class DateTime PHP.
+    sebagai tambahan, aturan berbasis tanggal dapat dibuat mengunakan rule builder date yang fasih. contoh :
+
+    'start_date' => [
+        'required',
+        Rule::date()->format('Y-m-d'),
+    ]
+
+    - decimal:min,max
+    bidang yang divalidasi harus berupa angka dan harus berisi jumlah angka desimal yang ditentukan. contoh :
+
+    // harus memiliki 2 angka desimal secara tepat
+    'price' => 'decimal:2'
+
+    // harus memiliki angka desimal diantara 2 dan 4
+    'price' => 'decimal:2,4'
+
+    - declined
+    bidang yang divalidasi harus berupa "no", "off", 0, "0", false, "false".
+
+    - declined_if:bidanglain,nilai,...
+    bisang yang sedang divalidasi harus berupa "no", "off", 0, "0", false, "false" jika bidang lain yang divalidasi sama dengan nilai yang ditentukan.
+
+    - different:field
+    bidang yang sedang divalidasi harus memiliki nilai yang berbeda dengan field yang diberikan.
+
+    - digits:nilai
+    integer dari bidang yang sedang divalidasi harus memiliki panjang tepat sesuai dengan nilai yang diberikan.
+
+    - digits_between:min,max
+    integer yang divalidasi harus memiliki panjang diantar nilai min dan max yang diberikan.
+
+    - dimensions
+    bidang yang divalidasi harus berupa gambar yang batasan dimensinya sesuai dengan parameter rule(aturan) yang ditentukan. contoh :
+
+    'avatar' => 'dimensions:min_width=100,min_height=200'
+
+    batasan yang tersedia adalah : min_width, max_width, min_height, max_height, width, height, ratio.
+    batasan rasio(ratio) harus direpresentasikan dengan lebar per tinggi, ini dapat di tentukan dengan fraksi seperti 3/2 atau float seperti 1.5. contoh :
+
+    'avatar' => 'dimensions:ratio=1.5'
+    'avatar' => 'dimensions:ratio=3/2'
+
+    karena aturan ini membutuhkan beberapa argumen, akan lebih mudah / nyaman untuk membuat aturan ini menggunakan method Rule::dimensions untuk membuat aturan lebih fasih. contoh :
+
+    use Illuminate\Support\Facades\Validator;
+    use Illuminate\Validation\Rule;
+
+    Validator::make($data,[
+        'avatar' => [
+            'required',
+            Rule::dimensions()
+                ->minWidth(100)
+                ->minHeight(200)
+                ->ratio(3/2),
+        ]
+    ]);
