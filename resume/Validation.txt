@@ -880,3 +880,87 @@
                 ->ratio(3/2),
         ]
     ]);
+
+    - distinct
+    ketika memvalidasi array, bidang yang sedang divalidasi tidak boleh memiliki nilali duplikat apapun. contoh :
+
+        'fo.*.id' => 'distinct'
+
+    aturan distinct menggunakan perbadingan variabel yang longgar secara default, jika kita ingin menggunakan perbandingan ketat(strict) kita bisa menambahkan parameter 'strict' ke definisi rule validasi. contoh :
+
+        'foo.*.id' => 'distinct:strict'
+
+    selain itu kita juga bisa menambahkan argument fule validasi 'ignore_case' agar aturan dapat mengabaikan perbedaan kapitalisasi karakter unicode. contoh :
+
+        'foo.*.id' => 'distinct:ignore_case'
+
+    - doesnt_start_with:foo,bar,...
+    bidang yang sedang divalidasi tidak boleh diawali dengan salah satu nilai yang diberkan.
+
+    - desnt_end_with:foo,bar,...
+    bidang yang sedang divalidasi tidak boleh diakhiri dengan salah satu nilai yang diberikan.
+
+    - email
+    bidang yang sedang divalidasi harus diformat sebagai alamat email.
+    aturan validasi ini memanfaatkan package 'eguilas/email-validator' untuk memvalidasi alamat email.
+    secara default validator RFCValidation diterapkan, tapi kita bisa menerapkan gaya validasi lain juga. contoh :
+
+        'email' => 'email:rfc,dns'
+
+    pada contoh diatas aturan validasi akan menerapkan validasi RFCValidation dan DNSCheckValidation.
+    berikut daftar lengkap gaya validasi yang bisa kita terapkan :
+
+        -> rfc:RFCValidations - memvalidasi alamat email sesai RFCs yang didukung.
+        -> strict : NoRFCWarningsValidaton - memvalidasi alamat email sesuai RFCs yang didukung. Ketika warning ditemukan maka validasi gagal(sepertiperiode ertinggal dan beberapa periode berturut turut).
+        -> dns : DNSCheckValidaion - memastikan bahwa domain alamat email memiliki record MX yang valid.
+        -> spoof : SpoofCheckValidation - memastikan alamat email tidak berisi homograph atau karakter uniqode yang menipu.
+        -> filter : FilterEmailValidation - memastikan bahwa alamat email valid sesuai dengan  fungsi PHP filter_var().
+        -> filter_unicode : FilterEmailValidation::Unicode - memastikan bahwa alamat email valid sesuai dengan fungsi PHP filter_var() dan mengijinkan beberapa karakter Unicode.
+
+        untuk kemudahan / kenyamanan kita juga bisa membangun rule validasi email menggunakan rule bilder yang fasih. conoth :
+
+
+            $request->validate([
+                'email' => [
+                    'required',
+                    Rule::email()
+                        ->rfCompilant(strict: false)
+                        ->validateMxRecord()
+                        ->preventSpooging()
+                ]
+            ]);
+
+        aturan dns dan spoof membutuhkan extensi PHP 'intl'.
+
+    - ends_with:foo,bar,..
+    bidang yang sedang divalidasi harus diakhiri dengan salah satu nilai yang ditentukan.
+
+    - enum
+    aturan Enum adalah aturan berbasis class yang memvalidasi apakah bidang yang sedang divalidasi berisi nilai Enum yang valid.
+    aturan ini menerima nama dari Enum itu sendiri sebagai sau satunya argument constructor.
+    ketika memvalidasi nilai primitive, backed enum harus disediakan ke rule enum. contoh :
+
+        $request->validate([
+            'status' => [Rule::enum(ServerStatus::class)],
+        ]);
+
+    method only() dan except dari aturan Enum dapat kita gunakan untuk membatasi kasus enum mana yang akan dianggap valid. contoh :
+
+        Rule::enum(ServerStatus::class)
+            ->only([ServerStatus::pending, ServerStatus::active]);
+
+        Rule::enum(ServerStatus::class)
+            ->except([ServerStatus::pending, ServerStatus::active]);
+
+    method when() dapat digunakan untuk memodifikasi rule Enum secara kondisional. contoh :
+
+        Rule::Enum(StatusServer::class)
+            ->when(
+                Auth::user()->isAdmin(),
+                fn($rule) => $rule->only(..),
+                fn($rule) => $rule->except(..)
+            );
+
+    - exclude
+    bidang yang sedang divalidasiakan di kecualikan dari data request yang dikembalikan dari method validate() dan validated().
+
