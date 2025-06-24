@@ -964,3 +964,21 @@
     - exclude
     bidang yang sedang divalidasiakan di kecualikan dari data request yang dikembalikan dari method validate() dan validated().
 
+    - exclude_if:bidanglain,nilai
+    bidang yang divalidasi akan dikecualikan dari data request yang dikembalikan oleh method validate() dan validated(), ketika bidang lain sama dengan nilai yang diberikan.
+    jika logic exclusion(pengecualian) kondisional yang lebih komplex diperlukan, kita bisa menggunakan method Rule::excludeIf().
+    method ini menerima sebuah boolean atau sebuah closure.
+    jika diberikan sebuah closure, maka closure tersebut harus mengembalikan true atau false, untuk mengindikasi bahwa bidang yang sedang divalidasi itu harus di kecualikan. contoh :
+
+        Validator::make($request->all(),
+        [
+            'role_id' => Rule::excludeIf($request->user()->is_admin),
+        ]);
+
+    Validator::make($request->all(), [
+        'role_id' => Rule::excludeIf(fn() => $request->user()->is_admin)
+    ]);
+
+    - exclude_unless:bidanglain, nilai
+    bidang yang sedang divalidasi akan dikecualikan dari data request yang dikembalikan oleh method validate() atau validated(), kecuali bidang lain sama dengan nilai yang diberikan.
+    Jika nilai-nya null, (exclude_unless:bidanglain,null) maka bidang yang sedang divalidasi akan dikecualikan ketika bidang yang dibandingkan itu null, atau ketika bidang yang dibandingkan itu hilang dari data request.
